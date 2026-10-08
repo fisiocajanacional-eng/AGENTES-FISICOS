@@ -81,7 +81,8 @@
                 <div id="indicadorFase" class="mt-4 grid grid-cols-3 gap-2 text-center"></div>
 
                 <p class="mt-3 text-[11px] leading-relaxed text-slate-400">
-                    En brotes agudos de patologías crónicas, indique el tiempo transcurrido desde el inicio del brote.
+                    Los límites entre fases se adaptan al tipo de diagnóstico. En brotes agudos de patologías crónicas,
+                    indique el tiempo transcurrido desde el inicio del brote.
                 </p>
             </section>
 
@@ -160,9 +161,13 @@
         const etiquetasParametros = {
             modalidad: "Modalidad",
             frecuencia: "Frecuencia",
+            ancho_pulso: "Ancho de pulso",
             intensidad: "Intensidad",
             tiempo: "Tiempo de aplicación"
         };
+
+        // Claves que no se muestran como parámetro
+        const clavesNoParametro = ["nota", "bloqueo", "mensaje"];
 
         const estilosNivel = {
             restriccion: { etiqueta: "Restricción", caja: "border-rose-500 bg-rose-50", texto: "text-rose-800", tag: "text-rose-700" },
@@ -181,21 +186,47 @@
         // Utilidades
         const normalizar = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const coincide = (lista, valor) => lista === "*" || lista.includes(valor);
+        const coincideTags = (lista, tags) => lista === "*" || tags.some(t => lista.includes(t));
         const buscarPatologia = codigo => D.patologias.find(p => p.c === codigo);
         const buscarAgente = id => D.agentes.find(a => a.id === id);
 
+        // Etiquetas de un diagnóstico: primero las adicionales (x), luego el tejido (t)
+        const obtenerTags = p => [...(p.x || []), p.t];
+
+        // Umbrales de fase: el primero definido para las etiquetas del diagnóstico, o el valor por defecto
+        function obtenerUmbrales(p) {
+            const tabla = D.umbrales || {};
+            for (const t of obtenerTags(p)) {
+                if (tabla[t]) return tabla[t];
+            }
+            return tabla.default || { aguda: 7, subaguda: 28 };
+        }
+
+        function formatearDias(d) {
+            if (d < 60) return `${d} días`;
+            if (d < 730) return `${Math.round(d / 30)} meses`;
+            return `${Math.round(d / 365)} años`;
+        }
+
         // Fase evolutiva
-        function calcularFase() {
+        function calcularFase(p) {
             const valor = parseFloat(el.tiempoValor.value) || 0;
             let dias = valor;
             if (el.tiempoUnidad.value === 'meses') dias = valor * 30;
             if (el.tiempoUnidad.value === 'años') dias = valor * 365;
-            if (dias <= 7) return 'aguda';
-            if (dias <= 28) return 'subaguda';
+            const u = obtenerUmbrales(p);
+            if (dias <= u.aguda) return 'aguda';
+            if (dias <= u.subaguda) return 'subaguda';
             return 'cronica';
         }
 
-        function renderFase(fase) {
+        function renderFase(fase, p) {
+            const u = obtenerUmbrales(p);
+            const detalles = {
+                aguda: `hasta ${formatearDias(u.aguda)}`,
+                subaguda: `${formatearDias(u.aguda)} a ${formatearDias(u.subaguda)}`,
+                cronica: `más de ${formatearDias(u.subaguda)}`
+            };
             el.indicadorFase.innerHTML = Object.entries(D.fases).map(([id, f]) => {
                 const activo = id === fase;
                 const clases = activo
@@ -203,16 +234,29 @@
                     : "bg-white border-slate-200 text-slate-400";
                 return `<div class="border rounded-lg px-2 py-2 ${clases}">
                             <div class="text-xs uppercase tracking-wider">${f.etiqueta}</div>
-                            <div class="text-[11px] mt-0.5 opacity-80">${f.detalle}</div>
+                            <div class="text-[11px] mt-0.5 opacity-80">${detalles[id]}</div>
                         </div>`;
             }).join('');
+        }
+
+        // Dosificación: primero la específica (por etiqueta o tejido), luego la tabla general
+        function obtenerReceta(p, agenteId, fase) {
+            const esp = D.dosificacion_especifica || {};
+            for (const t of obtenerTags(p)) {
+                const porAgente = esp[t]?.[agenteId];
+                if (porAgente) {
+                    const r = porAgente[fase] || porAgente["*"];
+                    if (r) return r;
+                }
+            }
+            return D.dosificacion[agenteId]?.[fase];
         }
 
         // Lista de diagnósticos
         function renderLista() {
             const filtro = normalizar(el.buscador.value.trim());
             const coincidencias = D.patologias.filter(p =>
-                !filtro || normalizar(`${p.c} ${p.n} ${p.g}`).includes(filtro)
+                !filtro || normalizar(`${p.c} ${p.n} ${p.g} ${p.s || ''}`).includes(filtro)
             );
 
             if (coincidencias.length === 0) {
@@ -273,18 +317,18 @@
 
         // Motor de dosificación
         function calcular() {
-            const fase = calcularFase();
             const patologia = buscarPatologia(estado.codigo);
             const agente = buscarAgente(estado.agente);
             if (!patologia || !agente) return;
 
-            renderFase(fase);
+            const fase = calcularFase(patologia);
+            renderFase(fase, patologia);
 
             el.resTitulo.textContent = agente.nombre;
             el.resSubtitulo.textContent =
                 `${patologia.n} (${D.clasificacion} ${patologia.c})  |  Fase ${D.fases[fase].etiqueta.toLowerCase()}`;
 
-            const receta = D.dosificacion[agente.id]?.[fase];
+            const receta = obtenerReceta(patologia, agente.id, fase);
             const alertas = [];
 
             el.parametros.innerHTML = "";
@@ -301,7 +345,11 @@
                     mensaje: receta?.mensaje || "No existe un protocolo definido para esta combinación."
                 });
             } else {
+                if (receta.nota) {
+                    alertas.push({ nivel: "info", titulo: "Protocolo específico", mensaje: receta.nota });
+                }
                 for (const [clave, valor] of Object.entries(receta)) {
+                    if (clavesNoParametro.includes(clave)) continue;
                     el.parametros.insertAdjacentHTML('beforeend', `
                         <div class="py-3 grid grid-cols-3 gap-4 items-baseline">
                             <dt class="text-xs uppercase tracking-wider text-slate-400">${etiquetasParametros[clave] || clave}</dt>
@@ -311,7 +359,7 @@
             }
 
             D.reglas.forEach(r => {
-                if (coincide(r.agentes, agente.id) && coincide(r.tejidos, patologia.t) && coincide(r.fases, fase)) {
+                if (coincide(r.agentes, agente.id) && coincideTags(r.tejidos, obtenerTags(patologia)) && coincide(r.fases, fase)) {
                     alertas.push(r);
                 }
             });
