@@ -9,16 +9,26 @@
   Para actualizar la herramienta basta con editar este archivo y subirlo a GitHub.
   No es necesario modificar la página (calculadora_fisioterapia.html).
 
-  Tejidos válidos (campo "t" de cada patología):
-    tendon, ligamento, hueso, articulacion, musculo, nervio, disco,
-    bursa, fascia, menisco, sistemico, postquirurgico
+  Campos de cada patología:
+    c = código CIE-10 | n = nombre | g = grupo | t = tejido principal
+    x = etiquetas adicionales (opcional, lista) | s = sinónimos para el buscador (opcional)
+
+  Tejidos válidos (campo "t"):
+    tendon, ligamento, hueso, articulacion, musculo, nervio, disco, bursa, fascia,
+    menisco, sistemico, postquirurgico, luxacion, snc, suelo_pelvico, piel, vascular
+
+  Etiquetas adicionales (campo "x") usadas actualmente: pediatrico, dolor_pelvico
+
+  Otros bloques:
+    - umbrales                : días que separan fase aguda, subaguda y crónica (por tejido o por defecto)
+    - dosificacion_especifica : parámetros propios de un tejido o etiqueta (reemplazan a la tabla general)
 
   Fases válidas: aguda, subaguda, cronica
 */
 
 window.DATOS_FISIO = {
 
-  version: "1.0",
+  version: "1.1",
   fecha: "2026-10-08",
   clasificacion: "CIE-10",
 
@@ -49,8 +59,13 @@ window.DATOS_FISIO = {
     "Pie y tobillo",
     "Músculo y tejidos blandos",
     "Nervios periféricos",
+    "Luxaciones y subluxaciones",
     "Artropatías y sistémicas",
     "Traumatismos y fracturas",
+    "Neurológico (sistema nervioso central)",
+    "Suelo pélvico y uroginecología",
+    "Pediatría",
+    "Piel, vascular y otros",
     "Posquirúrgico"
   ],
 
@@ -153,8 +168,162 @@ window.DATOS_FISIO = {
 
     // Posquirúrgico
     { c: "Z47.8", n: "Cuidados posteriores a cirugía ortopédica", g: "Posquirúrgico", t: "postquirurgico" },
-    { c: "Z96.6", n: "Presencia de implante ortopédico articular (prótesis)", g: "Posquirúrgico", t: "postquirurgico" }
+    { c: "Z96.6", n: "Presencia de implante ortopédico articular (prótesis)", g: "Posquirúrgico", t: "postquirurgico" },
+    { c: "Z89.9", n: "Ausencia adquirida de miembro (amputación), sin otra especificación", g: "Posquirúrgico", t: "postquirurgico", s: "amputado muñón protesis" },
+
+    // Columna vertebral (ampliación)
+    { c: "M54.6", n: "Dolor en la columna dorsal (dorsalgia)", g: "Columna vertebral", t: "musculo" },
+    { c: "M54.9", n: "Dorsalgia, no especificada", g: "Columna vertebral", t: "musculo" },
+    { c: "M51.2", n: "Desplazamiento de disco intervertebral (hernia discal)", g: "Columna vertebral", t: "disco", s: "hernia discal lumbar" },
+    { c: "M50.2", n: "Desplazamiento de disco cervical (hernia discal cervical)", g: "Columna vertebral", t: "disco" },
+    { c: "M43.1", n: "Espondilolistesis", g: "Columna vertebral", t: "articulacion" },
+    { c: "M53.1", n: "Síndrome cervicobraquial", g: "Columna vertebral", t: "nervio" },
+    { c: "M53.3", n: "Trastorno sacrococcígeo (coccigodinia)", g: "Columna vertebral", t: "ligamento", s: "coxis cóccix" },
+    { c: "M43.6", n: "Tortícolis", g: "Columna vertebral", t: "musculo" },
+    { c: "M40.0", n: "Cifosis postural", g: "Columna vertebral", t: "musculo" },
+    { c: "G44.2", n: "Cefalea tensional", g: "Columna vertebral", t: "musculo", s: "cefalea cervicogenica dolor de cabeza" },
+
+    // Rodilla y pie (ampliación)
+    { c: "M23.5", n: "Inestabilidad crónica de la rodilla", g: "Rodilla", t: "ligamento" },
+    { c: "M21.4", n: "Pie plano adquirido", g: "Pie y tobillo", t: "ligamento" },
+
+    // Nervios periféricos (ampliación)
+    { c: "G50.0", n: "Neuralgia del trigémino", g: "Nervios periféricos", t: "nervio" },
+    { c: "G54.0", n: "Trastorno del plexo braquial", g: "Nervios periféricos", t: "nervio" },
+    { c: "G57.3", n: "Lesión del nervio ciático poplíteo externo (parálisis peronea)", g: "Nervios periféricos", t: "nervio", s: "pie caído" },
+    { c: "G57.6", n: "Lesión del nervio plantar (neuroma de Morton)", g: "Nervios periféricos", t: "nervio" },
+
+    // Luxaciones y subluxaciones
+    { c: "S43.0", n: "Luxación de la articulación del hombro (glenohumeral)", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S43.1", n: "Luxación de la articulación acromioclavicular", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S53.1", n: "Luxación del codo", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S63.0", n: "Luxación de la muñeca", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S63.1", n: "Luxación de dedo de la mano", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S73.0", n: "Luxación de la cadera", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S83.0", n: "Luxación de la rótula", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S83.1", n: "Luxación de la rodilla", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S93.0", n: "Luxación de la articulación del tobillo", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S93.3", n: "Luxación del pie", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S03.0", n: "Luxación de la mandíbula (articulación temporomandibular)", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "S13.1", n: "Luxación de vértebra cervical", g: "Luxaciones y subluxaciones", t: "luxacion" },
+    { c: "M24.4", n: "Luxación recidivante y subluxación articular (inestabilidad)", g: "Luxaciones y subluxaciones", t: "luxacion", s: "subluxacion" },
+
+    // Artropatías (ampliación)
+    { c: "M25.4", n: "Derrame articular", g: "Artropatías y sistémicas", t: "articulacion" },
+    { c: "M25.5", n: "Dolor articular", g: "Artropatías y sistémicas", t: "articulacion", s: "artralgia" },
+    { c: "M79.6", n: "Dolor en miembro", g: "Artropatías y sistémicas", t: "musculo" },
+
+    // Traumatismos y fracturas (ampliación)
+    { c: "S52.5", n: "Fractura de la epífisis inferior del radio (Colles)", g: "Traumatismos y fracturas", t: "hueso", s: "muneca" },
+    { c: "S72.0", n: "Fractura del cuello del fémur", g: "Traumatismos y fracturas", t: "hueso", s: "fractura de cadera" },
+    { c: "S12", n: "Fractura del cuello (columna cervical)", g: "Traumatismos y fracturas", t: "hueso" },
+    { c: "S22", n: "Fractura de costilla(s), esternón y columna torácica", g: "Traumatismos y fracturas", t: "hueso" },
+    { c: "S32", n: "Fractura de la columna lumbar y de la pelvis", g: "Traumatismos y fracturas", t: "hueso" },
+
+    // Neurológico (sistema nervioso central)
+    { c: "G81.9", n: "Hemiplejía / hemiparesia, no especificada", g: "Neurológico (sistema nervioso central)", t: "snc", s: "hemiparesia hemiparesis acv" },
+    { c: "G81.0", n: "Hemiplejía flácida", g: "Neurológico (sistema nervioso central)", t: "snc", s: "hemiparesia" },
+    { c: "G81.1", n: "Hemiplejía espástica", g: "Neurológico (sistema nervioso central)", t: "snc", s: "hemiparesia espasticidad" },
+    { c: "I69.3", n: "Secuelas de infarto cerebral", g: "Neurológico (sistema nervioso central)", t: "snc", s: "acv isquemico hemiparesia derrame" },
+    { c: "I69.4", n: "Secuelas de accidente cerebrovascular, no especificado", g: "Neurológico (sistema nervioso central)", t: "snc", s: "acv derrame hemiparesia" },
+    { c: "G82.2", n: "Paraplejía, no especificada", g: "Neurológico (sistema nervioso central)", t: "snc", s: "paraparesia" },
+    { c: "G82.5", n: "Tetraplejía, no especificada", g: "Neurológico (sistema nervioso central)", t: "snc", s: "cuadriplejia tetraparesia" },
+    { c: "T91.3", n: "Secuelas de traumatismo de la médula espinal", g: "Neurológico (sistema nervioso central)", t: "snc", s: "lesion medular" },
+    { c: "S06.9", n: "Traumatismo intracraneal, no especificado", g: "Neurológico (sistema nervioso central)", t: "snc", s: "tce traumatismo craneoencefalico" },
+    { c: "G20", n: "Enfermedad de Parkinson", g: "Neurológico (sistema nervioso central)", t: "snc" },
+    { c: "G35", n: "Esclerosis múltiple", g: "Neurológico (sistema nervioso central)", t: "snc" },
+    { c: "G12.2", n: "Enfermedad de la neurona motora (esclerosis lateral amiotrófica)", g: "Neurológico (sistema nervioso central)", t: "snc", s: "ela" },
+    { c: "G61.0", n: "Síndrome de Guillain-Barré", g: "Neurológico (sistema nervioso central)", t: "snc" },
+    { c: "G62.9", n: "Polineuropatía, no especificada", g: "Neurológico (sistema nervioso central)", t: "nervio" },
+    { c: "R26.8", n: "Otras anormalidades de la marcha y de la movilidad", g: "Neurológico (sistema nervioso central)", t: "snc", s: "ataxia alteracion de la marcha" },
+
+    // Suelo pélvico y uroginecología
+    { c: "N81.1", n: "Cistocele", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico", s: "prolapso vesical" },
+    { c: "N81.0", n: "Uretrocele", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "N81.6", n: "Rectocele", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "N81.2", n: "Prolapso uterovaginal incompleto", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico", s: "prolapso uterino" },
+    { c: "N81.3", n: "Prolapso uterovaginal completo", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico", s: "prolapso uterino" },
+    { c: "N39.3", n: "Incontinencia urinaria de esfuerzo", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "N39.4", n: "Otras incontinencias urinarias especificadas (urgencia, mixta)", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "R32", n: "Incontinencia urinaria, no especificada", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "N32.8", n: "Otros trastornos especificados de la vejiga (vejiga hiperactiva)", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "R15", n: "Incontinencia fecal", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico" },
+    { c: "R10.2", n: "Dolor pélvico y perineal", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico", x: ["dolor_pelvico"] },
+    { c: "N94.1", n: "Dispareunia", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico", x: ["dolor_pelvico"] },
+    { c: "N94.2", n: "Vaginismo", g: "Suelo pélvico y uroginecología", t: "suelo_pelvico", x: ["dolor_pelvico"] },
+    { c: "M62.0", n: "Diástasis del músculo (diástasis de rectos abdominales)", g: "Suelo pélvico y uroginecología", t: "musculo", s: "posparto" },
+
+    // Pediatría
+    { c: "G80.9", n: "Parálisis cerebral, no especificada", g: "Pediatría", t: "snc", x: ["pediatrico"], s: "pci" },
+    { c: "Q05.9", n: "Espina bífida, sin otra especificación", g: "Pediatría", t: "snc", x: ["pediatrico"], s: "mielomeningocele" },
+    { c: "Q90.9", n: "Síndrome de Down, sin otra especificación", g: "Pediatría", t: "snc", x: ["pediatrico"], s: "hipotonia" },
+    { c: "R62.0", n: "Retraso en el logro de hitos del desarrollo", g: "Pediatría", t: "snc", x: ["pediatrico"], s: "retraso psicomotor" },
+    { c: "Q66.0", n: "Pie equinovaro congénito", g: "Pediatría", t: "articulacion", x: ["pediatrico"], s: "pie zambo" },
+    { c: "Q65.9", n: "Defecto congénito de la cadera, no especificado (displasia de cadera)", g: "Pediatría", t: "articulacion", x: ["pediatrico"] },
+    { c: "Q68.0", n: "Tortícolis congénita", g: "Pediatría", t: "musculo", x: ["pediatrico"] },
+    { c: "P14.0", n: "Parálisis de Erb por traumatismo del nacimiento", g: "Pediatría", t: "nervio", x: ["pediatrico"], s: "plexo braquial obstetrico" },
+
+    // Piel, vascular y otros
+    { c: "L90.5", n: "Cicatriz y fibrosis de la piel", g: "Piel, vascular y otros", t: "piel", s: "cicatriz adherencia" },
+    { c: "L91.0", n: "Cicatriz queloide", g: "Piel, vascular y otros", t: "piel" },
+    { c: "L89.9", n: "Úlcera por presión (de decúbito), no especificada", g: "Piel, vascular y otros", t: "piel", s: "escara" },
+    { c: "I89.0", n: "Linfedema, no clasificado en otra parte", g: "Piel, vascular y otros", t: "vascular" },
+    { c: "I87.2", n: "Insuficiencia venosa crónica (periférica)", g: "Piel, vascular y otros", t: "vascular", s: "varices" }
   ],
+
+  /*
+    Umbrales de fase evolutiva, en días.
+    aguda: hasta ese día | subaguda: hasta ese día | crónica: después.
+    Se usa el umbral del tejido (o etiqueta) del diagnóstico; si no existe, el de "default".
+  */
+  umbrales: {
+    default: { aguda: 7, subaguda: 28 },
+    snc:     { aguda: 7, subaguda: 180 }
+  },
+
+  /*
+    Dosificación específica por tejido o etiqueta (reemplaza a la tabla general).
+    Estructura: tejido/etiqueta > agente > fase ("*" = todas las fases).
+    El campo "nota" se muestra como información, no como parámetro.
+  */
+  dosificacion_especifica: {
+    suelo_pelvico: {
+      electroterapia: {
+        "*": {
+          modalidad: "Electroestimulación del suelo pélvico (endocavitaria o perineal superficial)",
+          frecuencia: "Incontinencia de esfuerzo: 35 - 50 Hz | Urgencia o vejiga hiperactiva: 5 - 10 Hz",
+          ancho_pulso: "200 - 300 µs",
+          intensidad: "Contracción perineal perceptible, sin dolor",
+          tiempo: "15 - 20 minutos (relación trabajo:reposo 1:2)",
+          nota: "Parámetros orientativos. En prolapso e incontinencia la electroestimulación complementa el entrenamiento muscular del suelo pélvico y no lo sustituye."
+        }
+      }
+    },
+    dolor_pelvico: {
+      electroterapia: {
+        "*": {
+          modalidad: "TENS analgésico (perineal o sacro) o estimulación relajante",
+          frecuencia: "80 - 100 Hz (analgesia) | 2 - 10 Hz (relajación)",
+          ancho_pulso: "100 - 200 µs",
+          intensidad: "Sensitiva, sin contracción dolorosa",
+          tiempo: "20 - 30 minutos",
+          nota: "Parámetros orientativos. La estimulación excitomotora no está indicada si existe hipertonía del suelo pélvico."
+        }
+      }
+    },
+    snc: {
+      electroterapia: {
+        "*": {
+          modalidad: "Electroestimulación neuromuscular (NMES/FES) sobre la musculatura parética, o TENS para dolor y espasticidad",
+          frecuencia: "NMES: 20 - 50 Hz | TENS para espasticidad: 80 - 100 Hz",
+          ancho_pulso: "200 - 300 µs",
+          intensidad: "Contracción visible y tolerable, sin dolor ni reacciones asociadas excesivas",
+          tiempo: "15 - 30 minutos",
+          nota: "Parámetros orientativos. Complementan el programa de rehabilitación funcional y no lo reemplazan."
+        }
+      }
+    }
+  },
 
   // Parámetros por agente físico y fase
   dosificacion: {
@@ -288,6 +457,90 @@ window.DATOS_FISIO = {
       nivel: "info",
       titulo: "Técnica de aplicación",
       mensaje: "El cabezal de ultrasonido actúa como electrodo activo: mantenerlo siempre en movimiento, con gel conductor, y colocar bien el electrodo de retorno. Evitar la aplicación sobre metal, marcapasos, zonas sin sensibilidad o embarazo."
+    },
+
+    // Luxaciones
+    {
+      agentes: "*",
+      tejidos: ["luxacion"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Luxación o subluxación",
+      mensaje: "Confirmar que la articulación está reducida y descartar fractura asociada y lesión neurovascular antes de aplicar cualquier agente físico. Respetar el período de inmovilización indicado por el médico tratante."
+    },
+
+    // Suelo pélvico
+    {
+      agentes: "*",
+      tejidos: ["suelo_pelvico"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Región pélvica",
+      mensaje: "Descartar embarazo, infección urinaria o vaginal activa, sangrado sin diagnóstico, neoplasia y marcapasos antes de aplicar. Verificar la presencia de DIU u otro material metálico antes de usar campos electromagnéticos, alta frecuencia o ultrasonido sobre la zona."
+    },
+
+    // Neurológico central
+    {
+      agentes: "*",
+      tejidos: ["snc"],
+      fases: "*",
+      nivel: "info",
+      titulo: "Patología neurológica central",
+      mensaje: "Los agentes físicos son un complemento del programa de rehabilitación funcional. Las fases evolutivas se calculan con umbrales propios del sistema nervioso central (subaguda hasta aproximadamente 6 meses). Ajustar siempre según la respuesta y la tolerancia del paciente."
+    },
+    {
+      agentes: ["ultrasonido", "onda_corta", "alta_frecuencia", "terapia_combinada"],
+      tejidos: ["snc"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Sensibilidad alterada",
+      mensaje: "Verificar la sensibilidad térmica y dolorosa antes de aplicar. Con hipoestesia, alteraciones cognitivas o dificultad para comunicarse, el paciente puede no referir sobrecalentamiento."
+    },
+    {
+      agentes: ["electroterapia", "terapia_combinada"],
+      tejidos: ["snc"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Estimulación eléctrica en paciente neurológico",
+      mensaje: "En antecedente de epilepsia o crisis convulsivas evitar la estimulación en cabeza y cuello. Observar la respuesta del tono muscular y de la espasticidad durante y después de la aplicación."
+    },
+
+    // Piel
+    {
+      agentes: "*",
+      tejidos: ["piel"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Integridad de la piel",
+      mensaje: "No aplicar sobre heridas abiertas ni sobre piel con signos de infección. Proteger la zona con el medio de acoplamiento adecuado y vigilar la tolerancia cutánea."
+    },
+
+    // Vascular
+    {
+      agentes: "*",
+      tejidos: ["vascular"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Compromiso circulatorio o linfático",
+      mensaje: "Descartar trombosis venosa profunda antes de aplicar cualquier agente en el miembro. Evitar los efectos térmicos intensos sobre zonas con edema o con circulación comprometida."
+    },
+
+    // Pediatría
+    {
+      agentes: ["ultrasonido", "onda_corta", "alta_frecuencia", "terapia_combinada", "ondas_choque"],
+      tejidos: ["pediatrico"],
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Paciente pediátrico",
+      mensaje: "Evitar la aplicación sobre cartílagos de crecimiento (fisis) abiertos. El calor profundo y las ondas de choque solo deben usarse con criterio especializado y a intensidades reducidas."
+    },
+    {
+      agentes: "*",
+      tejidos: ["pediatrico"],
+      fases: "*",
+      nivel: "info",
+      titulo: "Dosificación pediátrica",
+      mensaje: "Los valores mostrados corresponden a adultos. En niños reducir intensidad y tiempo de aplicación según edad, peso y tolerancia."
     }
   ]
 };
