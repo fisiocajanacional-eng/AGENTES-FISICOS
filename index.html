@@ -14,6 +14,10 @@
         .lista-scroll { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
         .lista-scroll::-webkit-scrollbar { width: 6px; }
         .lista-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] .flecha { transform: rotate(90deg); }
+        .flecha { transition: transform .15s; display: inline-block; }
 
         @media print {
             body { background: #fff; }
@@ -33,12 +37,20 @@
             </h1>
             <div class="mx-auto mt-4 h-px w-24 bg-amber-400/70"></div>
             <p class="mt-4 text-xs md:text-sm uppercase tracking-[0.25em] text-slate-400">
-                Asistente de dosificación de agentes físicos
+                Dosificación de agentes físicos y ejercicio terapéutico
             </p>
         </div>
     </header>
 
-    <div class="max-w-6xl mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- SELECTOR DE MODO -->
+    <div class="max-w-6xl mx-auto px-4 md:px-6 pt-6 no-imprimir">
+        <div class="inline-flex rounded-lg border border-slate-300 bg-white p-1 text-sm">
+            <button id="modoAgente" type="button" class="px-4 py-2 rounded-md font-medium transition">Agentes físicos</button>
+            <button id="modoEjercicio" type="button" class="px-4 py-2 rounded-md font-medium transition">Ejercicio terapéutico</button>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- COLUMNA IZQUIERDA: CONTEXTO CLÍNICO -->
         <div class="lg:col-span-5 space-y-6 no-imprimir">
@@ -51,7 +63,7 @@
                 </div>
 
                 <input id="buscador" type="text" autocomplete="off"
-                       placeholder="Buscar por nombre, código o región (ej. M75, rodilla, tendinitis)"
+                       placeholder="Buscar por nombre, código o región (ej. M75, rodilla, hemiparesia)"
                        class="mt-3 w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400">
 
                 <div id="listaPatologias" class="lista-scroll mt-3 h-64 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100"></div>
@@ -86,10 +98,60 @@
                 </p>
             </section>
 
-            <!-- 3. Agente -->
-            <section class="tarjeta bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+            <!-- 3a. Agente -->
+            <section id="panelAgente" class="tarjeta bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                 <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500">3. Agente físico</h2>
                 <div id="selectorAgentes" class="mt-3 grid grid-cols-2 gap-2"></div>
+            </section>
+
+            <!-- 3b. Ejercicio -->
+            <section id="panelEjercicio" class="tarjeta bg-white rounded-xl shadow-sm border border-slate-200 p-5 hidden">
+                <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500">3. Objetivo del ejercicio</h2>
+                <div id="selectorObjetivos" class="mt-3 grid grid-cols-2 gap-2"></div>
+
+                <div id="bloque1RM" class="mt-5 pt-4 border-t border-slate-100">
+                    <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-500">Repetición máxima (1RM)</h3>
+                    <select id="rmModo" class="mt-3 w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-slate-400">
+                        <option value="directo">Conozco el 1RM</option>
+                        <option value="estimar" selected>Estimar con una carga submáxima</option>
+                    </select>
+
+                    <div id="rmDirectoCaja" class="mt-3 hidden">
+                        <label class="block text-xs text-slate-500 mb-1">1RM (kg)</label>
+                        <input id="rmDirecto" type="number" min="0" step="0.5" placeholder="p. ej. 100"
+                               class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                    </div>
+
+                    <div id="rmEstimarCaja" class="mt-3 space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Carga (kg)</label>
+                                <input id="rmCarga" type="number" min="0" step="0.5" placeholder="p. ej. 80"
+                                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Repeticiones hasta el fallo</label>
+                                <input id="rmReps" type="number" min="1" step="1" placeholder="p. ej. 8"
+                                       class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1">Fórmula</label>
+                            <select id="rmFormula" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <label class="block text-xs text-slate-500 mb-1">Nivel de entrenamiento (frecuencia semanal)</label>
+                    <select id="nivel" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"></select>
+                </div>
+
+                <div id="bloqueSemana" class="mt-4 hidden">
+                    <label class="block text-xs text-slate-500 mb-1">Semana del programa HSR (1 a 12)</label>
+                    <input id="hsrSemana" type="number" min="1" max="12" step="1" value="1"
+                           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                </div>
             </section>
         </div>
 
@@ -99,9 +161,10 @@
 
                 <div class="px-6 py-5 border-b border-slate-200 flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-[11px] uppercase tracking-widest text-slate-400">Prescripción sugerida</p>
+                        <p id="resEtiqueta" class="text-[11px] uppercase tracking-widest text-slate-400">Prescripción sugerida</p>
                         <h2 id="resTitulo" class="titulo-serif mt-1 text-xl md:text-2xl font-semibold text-slate-900"></h2>
                         <p id="resSubtitulo" class="mt-1 text-sm text-slate-500"></p>
+                        <span id="resBadge" class="inline-block mt-3 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"></span>
                     </div>
                     <button id="btnImprimir" type="button"
                             class="no-imprimir shrink-0 text-xs font-medium px-3 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition">
@@ -109,11 +172,17 @@
                     </button>
                 </div>
 
+                <div id="bannerEjercicio" class="hidden"></div>
+
                 <div class="px-6 py-5">
                     <dl id="contenedorParametros" class="divide-y divide-slate-100"></dl>
                 </div>
 
                 <div id="contenedorAlertas" class="px-6 pb-6 space-y-3"></div>
+
+                <div id="contenedorPrecision" class="px-6 pb-6 no-imprimir"></div>
+
+                <div id="contenedorFuentes" class="px-6 pb-6 border-t border-slate-100 pt-5"></div>
             </section>
         </div>
     </div>
@@ -121,7 +190,8 @@
     <footer class="max-w-6xl mx-auto px-6 pb-10 text-center text-xs text-slate-400 leading-relaxed">
         <p id="pieVersion"></p>
         <p class="mt-1">
-            Los valores son recomendaciones paramétricas generales. La dosificación final es responsabilidad
+            Los valores son recomendaciones paramétricas. Cada dosificación indica su fuente y si fue verificada,
+            es parcial o es una referencia general pendiente de verificar. La dosificación final es responsabilidad
             exclusiva del fisioterapeuta clínico, quien debe verificar contraindicaciones absolutas
             (marcapasos, embarazo, neoplasias, infección activa, alteraciones de la sensibilidad) antes de cada aplicación.
         </p>
@@ -138,36 +208,44 @@
                 '<div class="bg-rose-600 text-white text-sm text-center p-3">No se pudo cargar datos_fisioterapia.js. Verifique que ambos archivos estén en la misma carpeta.</div>');
             throw new Error("Falta datos_fisioterapia.js");
         }
+        const E = D.ejercicio;
 
         // Estado
-        const estado = { codigo: "M76.6", agente: "electroterapia" };
+        const estado = {
+            modo: "agente",
+            codigo: "M76.6",
+            agente: "electroterapia",
+            objetivo: "fuerza",
+            precisionAbierta: false
+        };
 
         // Elementos
+        const $ = id => document.getElementById(id);
         const el = {
-            buscador: document.getElementById('buscador'),
-            lista: document.getElementById('listaPatologias'),
-            selNombre: document.getElementById('seleccionNombre'),
-            selDetalle: document.getElementById('seleccionDetalle'),
-            tiempoValor: document.getElementById('tiempoValor'),
-            tiempoUnidad: document.getElementById('tiempoUnidad'),
-            indicadorFase: document.getElementById('indicadorFase'),
-            agentes: document.getElementById('selectorAgentes'),
-            resTitulo: document.getElementById('resTitulo'),
-            resSubtitulo: document.getElementById('resSubtitulo'),
-            parametros: document.getElementById('contenedorParametros'),
-            alertas: document.getElementById('contenedorAlertas')
+            buscador: $('buscador'), lista: $('listaPatologias'),
+            selNombre: $('seleccionNombre'), selDetalle: $('seleccionDetalle'),
+            tiempoValor: $('tiempoValor'), tiempoUnidad: $('tiempoUnidad'),
+            indicadorFase: $('indicadorFase'),
+            agentes: $('selectorAgentes'), objetivos: $('selectorObjetivos'),
+            panelAgente: $('panelAgente'), panelEjercicio: $('panelEjercicio'),
+            modoAgente: $('modoAgente'), modoEjercicio: $('modoEjercicio'),
+            resEtiqueta: $('resEtiqueta'), resTitulo: $('resTitulo'), resSubtitulo: $('resSubtitulo'), resBadge: $('resBadge'),
+            banner: $('bannerEjercicio'),
+            parametros: $('contenedorParametros'), alertas: $('contenedorAlertas'),
+            precision: $('contenedorPrecision'), fuentes: $('contenedorFuentes'),
+            rmModo: $('rmModo'), rmDirecto: $('rmDirecto'), rmCarga: $('rmCarga'), rmReps: $('rmReps'), rmFormula: $('rmFormula'),
+            rmDirectoCaja: $('rmDirectoCaja'), rmEstimarCaja: $('rmEstimarCaja'), bloque1RM: $('bloque1RM'),
+            nivel: $('nivel'), hsrSemana: $('hsrSemana'), bloqueSemana: $('bloqueSemana')
         };
 
         const etiquetasParametros = {
-            modalidad: "Modalidad",
-            frecuencia: "Frecuencia",
-            ancho_pulso: "Ancho de pulso",
-            intensidad: "Intensidad",
-            tiempo: "Tiempo de aplicación"
+            modalidad: "Modalidad", frecuencia: "Frecuencia", ancho_pulso: "Ancho de pulso",
+            intensidad: "Intensidad", tiempo: "Tiempo de aplicación", electrodos: "Electrodos",
+            carga: "Carga", series: "Series", repeticiones: "Repeticiones", tempo: "Tempo",
+            descanso: "Descanso", ejercicios: "Ejercicios", presion: "Presión del manguito",
+            manguito: "Manguito", progresion: "Progresión", dolor: "Control del dolor", rm1: "1RM de referencia"
         };
-
-        // Claves que no se muestran como parámetro
-        const clavesNoParametro = ["nota", "bloqueo", "mensaje"];
+        const clavesNoParametro = ["nota", "bloqueo", "mensaje", "ref", "estado", "notaFuente"];
 
         const estilosNivel = {
             restriccion: { etiqueta: "Restricción", caja: "border-rose-500 bg-rose-50", texto: "text-rose-800", tag: "text-rose-700" },
@@ -183,22 +261,26 @@
             cronica:  { activo: "bg-emerald-50 border-emerald-300 text-emerald-800" }
         };
 
+        const estilosEstadoFuente = {
+            verificada: { texto: "Fuente verificada", clases: "bg-emerald-100 text-emerald-800" },
+            parcial:    { texto: "Fuente parcial", clases: "bg-amber-100 text-amber-800" },
+            pendiente:  { texto: "Sin fuente verificada", clases: "bg-rose-100 text-rose-800" }
+        };
+
         // Utilidades
-        const normalizar = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const normalizar = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
         const coincide = (lista, valor) => lista === "*" || lista.includes(valor);
         const coincideTags = (lista, tags) => lista === "*" || tags.some(t => lista.includes(t));
         const buscarPatologia = codigo => D.patologias.find(p => p.c === codigo);
         const buscarAgente = id => D.agentes.find(a => a.id === id);
-
-        // Etiquetas de un diagnóstico: primero las adicionales (x), luego el tejido (t)
         const obtenerTags = p => [...(p.x || []), p.t];
+        const fmt = (n, d = 1) => Number(n).toFixed(d).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
+        const aMedioKg = kg => Math.round(kg * 2) / 2;
 
-        // Umbrales de fase: el primero definido para las etiquetas del diagnóstico, o el valor por defecto
+        // Umbrales y fase
         function obtenerUmbrales(p) {
             const tabla = D.umbrales || {};
-            for (const t of obtenerTags(p)) {
-                if (tabla[t]) return tabla[t];
-            }
+            for (const t of obtenerTags(p)) { if (tabla[t]) return tabla[t]; }
             return tabla.default || { aguda: 7, subaguda: 28 };
         }
 
@@ -208,7 +290,6 @@
             return `${Math.round(d / 365)} años`;
         }
 
-        // Fase evolutiva
         function calcularFase(p) {
             const valor = parseFloat(el.tiempoValor.value) || 0;
             let dias = valor;
@@ -229,9 +310,7 @@
             };
             el.indicadorFase.innerHTML = Object.entries(D.fases).map(([id, f]) => {
                 const activo = id === fase;
-                const clases = activo
-                    ? estilosFase[id].activo + " font-semibold"
-                    : "bg-white border-slate-200 text-slate-400";
+                const clases = activo ? estilosFase[id].activo + " font-semibold" : "bg-white border-slate-200 text-slate-400";
                 return `<div class="border rounded-lg px-2 py-2 ${clases}">
                             <div class="text-xs uppercase tracking-wider">${f.etiqueta}</div>
                             <div class="text-[11px] mt-0.5 opacity-80">${detalles[id]}</div>
@@ -239,7 +318,7 @@
             }).join('');
         }
 
-        // Dosificación: primero la específica (por etiqueta o tejido), luego la tabla general
+        // Dosificación de agentes: primero la específica (etiqueta o tejido), luego la tabla general
         function obtenerReceta(p, agenteId, fase) {
             const esp = D.dosificacion_especifica || {};
             for (const t of obtenerTags(p)) {
@@ -249,10 +328,13 @@
                     if (r) return r;
                 }
             }
-            return D.dosificacion[agenteId]?.[fase];
+            const gen = D.dosificacion[agenteId];
+            return gen?.[fase] || gen?.["*"];
         }
 
-        // Lista de diagnósticos
+        // ------------------------------------------------------------------
+        // LISTA DE DIAGNÓSTICOS
+        // ------------------------------------------------------------------
         function renderLista() {
             const filtro = normalizar(el.buscador.value.trim());
             const coincidencias = D.patologias.filter(p =>
@@ -289,19 +371,68 @@
             el.selDetalle.textContent = `${D.clasificacion}: ${p.c}  |  ${p.g}`;
         }
 
-        // Agentes
-        function renderAgentes() {
-            el.agentes.innerHTML = D.agentes.map(a => {
-                const activo = a.id === estado.agente;
-                return `<button type="button" data-agente="${a.id}"
-                            class="px-3 py-2.5 text-sm rounded-lg border text-left transition
-                                   ${activo ? 'bg-slate-900 border-slate-900 text-white font-medium' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'}">
-                            ${a.nombre}
-                        </button>`;
-            }).join('');
+        // ------------------------------------------------------------------
+        // SELECTORES (agentes y objetivos)
+        // ------------------------------------------------------------------
+        function botonSeleccion(dataAttr, id, nombre, activo) {
+            return `<button type="button" ${dataAttr}="${id}"
+                        class="px-3 py-2.5 text-sm rounded-lg border text-left transition
+                               ${activo ? 'bg-slate-900 border-slate-900 text-white font-medium' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-400'}">
+                        ${nombre}
+                    </button>`;
         }
 
-        // Alertas
+        function renderAgentes() {
+            el.agentes.innerHTML = D.agentes.map(a => botonSeleccion('data-agente', a.id, a.nombre, a.id === estado.agente)).join('');
+        }
+
+        function renderObjetivos() {
+            el.objetivos.innerHTML = E.ordenObjetivos.map(id =>
+                botonSeleccion('data-objetivo', id, E.objetivos[id].nombre, id === estado.objetivo)
+            ).join('');
+        }
+
+        function renderModo() {
+            const esAgente = estado.modo === 'agente';
+            el.panelAgente.classList.toggle('hidden', !esAgente);
+            el.panelEjercicio.classList.toggle('hidden', esAgente);
+            const on = "bg-slate-900 text-white", off = "text-slate-600 hover:bg-slate-100";
+            el.modoAgente.className = `px-4 py-2 rounded-md font-medium transition ${esAgente ? on : off}`;
+            el.modoEjercicio.className = `px-4 py-2 rounded-md font-medium transition ${esAgente ? off : on}`;
+        }
+
+        // ------------------------------------------------------------------
+        // FUENTES
+        // ------------------------------------------------------------------
+        function renderFuentes(refs, estadoReceta, notaFuente) {
+            const ids = [...new Set((refs && refs.length) ? refs : ["general"])];
+            const est = estilosEstadoFuente[estadoReceta] || estilosEstadoFuente.pendiente;
+
+            let html = `<div class="flex items-center justify-between gap-3">
+                            <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-500">Fuentes</h3>
+                            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${est.clases}">${est.texto}</span>
+                        </div>`;
+            if (notaFuente) {
+                html += `<p class="mt-3 text-xs leading-relaxed text-slate-600">${notaFuente}</p>`;
+            }
+            html += `<ul class="mt-3 space-y-3">`;
+            ids.forEach(id => {
+                const f = D.fuentes[id];
+                if (!f) return;
+                const e = estilosEstadoFuente[f.estado] || estilosEstadoFuente.pendiente;
+                const enlace = f.url ? ` <a href="${f.url}" target="_blank" rel="noopener noreferrer" class="text-slate-500 underline underline-offset-2 hover:text-slate-800">Abrir fuente</a>` : "";
+                html += `<li class="text-xs leading-relaxed text-slate-600">
+                            <span class="font-medium text-slate-700">${f.cita}</span>${enlace}
+                            ${f.detalle ? `<span class="block mt-0.5 text-slate-400">${f.detalle}</span>` : ""}
+                         </li>`;
+            });
+            html += `</ul>`;
+            el.fuentes.innerHTML = html;
+        }
+
+        // ------------------------------------------------------------------
+        // ALERTAS Y BADGE
+        // ------------------------------------------------------------------
         function renderAlertas(lista) {
             if (!lista.length) { el.alertas.innerHTML = ""; return; }
             const ordenadas = [...lista].sort((a, b) => ordenNivel.indexOf(a.nivel) - ordenNivel.indexOf(b.nivel));
@@ -315,15 +446,35 @@
             }).join('');
         }
 
-        // Motor de dosificación
-        function calcular() {
-            const patologia = buscarPatologia(estado.codigo);
+        function pintarBadgeFuente(estadoReceta) {
+            const est = estilosEstadoFuente[estadoReceta] || estilosEstadoFuente.pendiente;
+            el.resBadge.className = `inline-block mt-3 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${est.clases}`;
+            el.resBadge.textContent = est.texto;
+        }
+
+        function pintarFilas(filas) {
+            el.parametros.innerHTML = filas.map(([clave, valor]) => `
+                <div class="py-3 grid grid-cols-3 gap-4 items-baseline">
+                    <dt class="text-xs uppercase tracking-wider text-slate-400">${etiquetasParametros[clave] || clave}</dt>
+                    <dd class="col-span-2 text-sm font-medium text-slate-900">${valor}</dd>
+                </div>`).join('');
+        }
+
+        function pintarBloqueo(titulo, detalle) {
+            el.parametros.innerHTML = `
+                <div class="py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-600">${titulo}</p>
+                    <p class="mt-1 text-xs text-slate-400">${detalle}</p>
+                </div>`;
+        }
+
+        // ------------------------------------------------------------------
+        // MODO AGENTES FÍSICOS
+        // ------------------------------------------------------------------
+        function calcularAgente(patologia, fase) {
             const agente = buscarAgente(estado.agente);
-            if (!patologia || !agente) return;
-
-            const fase = calcularFase(patologia);
-            renderFase(fase, patologia);
-
+            el.resEtiqueta.textContent = "Prescripción sugerida";
+            el.banner.classList.add('hidden');
             el.resTitulo.textContent = agente.nombre;
             el.resSubtitulo.textContent =
                 `${patologia.n} (${D.clasificacion} ${patologia.c})  |  Fase ${D.fases[fase].etiqueta.toLowerCase()}`;
@@ -331,14 +482,11 @@
             const receta = obtenerReceta(patologia, agente.id, fase);
             const alertas = [];
 
-            el.parametros.innerHTML = "";
+            const estadoReceta = receta?.estado || "pendiente";
+            pintarBadgeFuente(estadoReceta);
 
             if (!receta || receta.bloqueo) {
-                el.parametros.innerHTML = `
-                    <div class="py-10 text-center">
-                        <p class="text-sm font-semibold text-slate-600">No se genera dosificación para esta combinación</p>
-                        <p class="mt-1 text-xs text-slate-400">Considere otro agente físico adecuado a la fase evolutiva.</p>
-                    </div>`;
+                pintarBloqueo("No se genera dosificación para esta combinación", "Considere otro agente físico adecuado a la fase evolutiva.");
                 alertas.push({
                     nivel: "restriccion",
                     titulo: "Agente no recomendado en esta fase",
@@ -348,14 +496,7 @@
                 if (receta.nota) {
                     alertas.push({ nivel: "info", titulo: "Protocolo específico", mensaje: receta.nota });
                 }
-                for (const [clave, valor] of Object.entries(receta)) {
-                    if (clavesNoParametro.includes(clave)) continue;
-                    el.parametros.insertAdjacentHTML('beforeend', `
-                        <div class="py-3 grid grid-cols-3 gap-4 items-baseline">
-                            <dt class="text-xs uppercase tracking-wider text-slate-400">${etiquetasParametros[clave] || clave}</dt>
-                            <dd class="col-span-2 text-sm font-medium text-slate-900">${valor}</dd>
-                        </div>`);
-                }
+                pintarFilas(Object.entries(receta).filter(([k]) => !clavesNoParametro.includes(k)));
             }
 
             D.reglas.forEach(r => {
@@ -363,13 +504,352 @@
                     alertas.push(r);
                 }
             });
-
             renderAlertas(alertas);
+
+            renderFuentes(receta?.ref, estadoReceta, receta?.notaFuente);
+            renderPrecision(patologia, fase, agente.id);
         }
 
-        // Eventos
-        el.buscador.addEventListener('input', renderLista);
+        // ------------------------------------------------------------------
+        // CÁLCULO DE PRECISIÓN (opcional)
+        // ------------------------------------------------------------------
+        const inp = "w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-slate-400";
+        const campo = (idc, etiqueta, control) =>
+            `<div><label for="${idc}" class="block text-xs text-slate-500 mb-1">${etiqueta}</label>${control}</div>`;
 
+        let precisionActual = null;   // { tipo, ... }
+
+        function renderPrecision(patologia, fase, agenteId) {
+            let contenido = "";
+            precisionActual = null;
+
+            if (agenteId === "ultrasonido" || agenteId === "terapia_combinada") {
+                const u = D.dosimetria.ultrasonido;
+                const def = u.porFase[fase];
+                precisionActual = { tipo: "us" };
+                contenido = `
+                    <p class="text-xs text-slate-500 leading-relaxed">Método de Watson: 1 minuto de energía por cada área equivalente al cabezal, multiplicado por la suma de la razón de pulso.</p>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        ${campo('pUSera', 'ERA del cabezal (cm²)', `<input id="pUSera" type="number" min="0.1" step="0.1" value="5" class="${inp}">`)}
+                        ${campo('pUSarea', 'Área a tratar (cm²)', `<input id="pUSarea" type="number" min="0.1" step="0.5" value="10" class="${inp}">`)}
+                        ${campo('pUSrazon', 'Razón de pulso', `<select id="pUSrazon" class="${inp}">${Object.keys(u.factorPulso).map(k => `<option value="${k}" ${k === def.razon ? 'selected' : ''}>${k === 'continuo' ? 'Continuo' : k}</option>`).join('')}</select>`)}
+                        ${campo('pUSint', 'Intensidad en la lesión (W/cm²)', `<input id="pUSint" type="number" min="0.05" step="0.05" value="${def.intensidad}" class="${inp}">`)}
+                    </div>`;
+            } else if (agenteId === "laser") {
+                const L = D.dosimetria.laser;
+                const sugerida = L.estructuras.find(s => s.cie.includes(patologia.c));
+                const grupos = [...new Set(L.estructuras.map(s => s.grupo))];
+                precisionActual = { tipo: "laser" };
+                contenido = `
+                    <p class="text-xs text-slate-500 leading-relaxed">Tabla WALT 780 - 860 nm. ${sugerida ? 'Se preseleccionó la estructura según el diagnóstico.' : 'Seleccione la estructura a tratar.'}</p>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="col-span-2">${campo('pLestr', 'Estructura', `<select id="pLestr" class="${inp}">${grupos.map(g => `<optgroup label="${g}">${L.estructuras.filter(s => s.grupo === g).map(s => `<option value="${s.id}" ${(sugerida ? sugerida.id : L.estructuras[0].id) === s.id ? 'selected' : ''}>${s.nombre}</option>`).join('')}</optgroup>`).join('')}</select>`)}</div>
+                        ${campo('pLpot', 'Potencia de salida (mW)', `<input id="pLpot" type="number" min="1" step="1" value="100" class="${inp}">`)}
+                        ${campo('pLspot', 'Área del haz (cm²)', `<input id="pLspot" type="number" min="0.01" step="0.01" value="1" class="${inp}">`)}
+                        ${campo('pLpuntos', 'Número de puntos', `<input id="pLpuntos" type="number" min="1" step="1" value="${(sugerida || L.estructuras[0]).puntos[0]}" class="${inp}">`)}
+                        ${campo('pLinterp', 'Lectura de la tabla', `<select id="pLinterp" class="${inp}"><option value="total">Joules = total del área (conservador)</option><option value="punto">Joules = por punto</option></select>`)}
+                    </div>
+                    <label class="mt-3 flex items-center gap-2 text-xs text-slate-600">
+                        <input id="pLred" type="checkbox" class="rounded border-slate-300"> Inflamación controlada: reducir la dosis un 30 %
+                    </label>`;
+            } else if (agenteId === "ondas_choque") {
+                precisionActual = { tipo: "eswt" };
+                contenido = `
+                    <p class="text-xs text-slate-500 leading-relaxed">Energía total = densidad de flujo de energía (EFD) × número de impulsos (Tenforde 2022). Iniciar con energía baja y titular según tolerancia.</p>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        ${campo('pEefd', 'EFD (mJ/mm²)', `<input id="pEefd" type="number" min="0" step="0.01" placeholder="p. ej. 0.10" class="${inp}">`)}
+                        ${campo('pEimp', 'Número de impulsos', `<input id="pEimp" type="number" min="0" step="100" placeholder="p. ej. 2000" class="${inp}">`)}
+                    </div>`;
+            }
+
+            if (!precisionActual) {
+                el.precision.innerHTML = `<p class="text-xs text-slate-400">No hay cálculo de precisión disponible para este agente en esta versión.</p>`;
+                return;
+            }
+
+            el.precision.innerHTML = `
+                <details id="detallesPrecision" ${estado.precisionAbierta ? 'open' : ''} class="rounded-lg border border-slate-200">
+                    <summary class="px-4 py-3 flex items-center justify-between text-xs font-semibold uppercase tracking-widest text-slate-600">
+                        <span>Cálculo de precisión (opcional)</span>
+                        <span class="flecha text-slate-400">&#9656;</span>
+                    </summary>
+                    <div class="px-4 pb-4">
+                        ${contenido}
+                        <div id="precSalida" class="mt-4"></div>
+                    </div>
+                </details>`;
+
+            $('detallesPrecision').addEventListener('toggle', e => { estado.precisionAbierta = e.target.open; });
+            calcPrecision();
+        }
+
+        function filaSalida(etiqueta, valor, extra = "") {
+            return `<div class="py-2 grid grid-cols-3 gap-3 items-baseline border-b border-slate-100 last:border-0">
+                        <dt class="text-xs text-slate-500">${etiqueta}</dt>
+                        <dd class="col-span-2 text-sm font-medium text-slate-900">${valor}${extra ? `<span class="block text-[11px] font-normal text-slate-400">${extra}</span>` : ""}</dd>
+                    </div>`;
+        }
+        function avisoSalida(nivel, texto) {
+            const e = estilosNivel[nivel];
+            return `<div class="mt-2 border-l-4 rounded-r px-3 py-2 text-xs leading-relaxed ${e.caja} ${e.texto}">${texto}</div>`;
+        }
+
+        function calcPrecision() {
+            if (!precisionActual) return;
+            const salida = $('precSalida');
+            if (!salida) return;
+            const num = id => parseFloat($(id)?.value);
+
+            if (precisionActual.tipo === "us") {
+                const u = D.dosimetria.ultrasonido;
+                const era = num('pUSera'), area = num('pUSarea'), inten = num('pUSint');
+                const razon = $('pUSrazon').value;
+                if (!(era > 0) || !(area > 0) || !(inten > 0)) { salida.innerHTML = avisoSalida('info', 'Ingrese valores válidos para el ERA, el área y la intensidad.'); return; }
+                const n = Math.ceil(area / era);
+                const factor = u.factorPulso[razon];
+                const tiempo = u.minutosPorArea * n * factor;
+                const potencia = inten * era;
+                const energia = potencia * 60 * u.minutosPorArea * n;
+                const densidad = inten * 60 * u.minutosPorArea;
+                salida.innerHTML = `<dl>
+                    ${filaSalida('Áreas de cabezal a cubrir', `${n}`, `área a tratar ÷ ERA, redondeado hacia arriba`)}
+                    ${filaSalida('Tiempo total', `${fmt(tiempo, 1)} min`, `${u.minutosPorArea} min × ${n} áreas × ${factor} (factor de la razón ${razon})`)}
+                    ${filaSalida('Emisión efectiva', `${fmt(u.minutosPorArea * n, 1)} min`, `tiempo con el ultrasonido emitiendo`)}
+                    ${filaSalida('Potencia de salida', `${fmt(potencia, 2)} W`, `intensidad × ERA`)}
+                    ${filaSalida('Energía total', `${fmt(energia, 0)} J`, `potencia × tiempo de emisión efectiva`)}
+                    ${filaSalida('Densidad de energía', `${fmt(densidad, 0)} J/cm²`, `energía ÷ área cubierta`)}
+                </dl>
+                ${avisoSalida('info', 'El tiempo sigue el método de Watson. La potencia y la energía son cálculos físicos que asumen que la intensidad indicada corresponde a la emisión (pico del pulso). Si su equipo muestra la intensidad promedio temporal, la energía real será menor. En lesiones profundas la intensidad en superficie debe ser mayor que la requerida en la lesión.')}`;
+                return;
+            }
+
+            if (precisionActual.tipo === "laser") {
+                const L = D.dosimetria.laser;
+                const est = L.estructuras.find(s => s.id === $('pLestr').value);
+                const pot = num('pLpot'), spot = num('pLspot'), nP = Math.round(num('pLpuntos'));
+                if (!est || !(pot > 0) || !(spot > 0) || !(nP >= 1)) { salida.innerHTML = avisoSalida('info', 'Ingrese valores válidos para la potencia, el área del haz y los puntos.'); return; }
+                const reducir = $('pLred').checked;
+                const dosis = est.joules * (reducir ? 1 - L.reduccion_control_inflamacion : 1);
+                const porTotal = $('pLinterp').value === 'total';
+                const totalJ = porTotal ? dosis : dosis * nP;
+                const porPunto = porTotal ? dosis / nP : dosis;
+                const segundos = porPunto / (pot / 1000);
+                const dPot = pot / spot;
+                const dEne = porPunto / spot;
+                const ventana = [dosis * (1 - L.ventana), dosis * (1 + L.ventana)];
+
+                let avisos = "";
+                if (nP < est.puntos[0] || nP > est.puntos[1]) {
+                    avisos += avisoSalida('info', `La tabla indica ${est.puntos[0]} a ${est.puntos[1]} puntos para esta estructura.`);
+                }
+                if (est.minPunto && porPunto < est.minPunto) {
+                    const maxPuntos = Math.max(1, Math.floor(totalJ / est.minPunto));
+                    avisos += avisoSalida('precaucion', `La dosis por punto (${fmt(porPunto, 1)} J) queda por debajo del mínimo de ${est.minPunto} J por punto. Con esta dosis total, use como máximo ${maxPuntos} punto(s).`);
+                }
+                if (segundos < L.tiempo_irradiacion_s[0] || segundos > L.tiempo_irradiacion_s[1]) {
+                    const pMin = porPunto / L.tiempo_irradiacion_s[1] * 1000, pMax = porPunto / L.tiempo_irradiacion_s[0] * 1000;
+                    avisos += avisoSalida('precaucion', `El tiempo por punto (${fmt(segundos, 0)} s) está fuera del rango de ${L.tiempo_irradiacion_s[0]} a ${L.tiempo_irradiacion_s[1]} s. Con esta dosis por punto, la potencia debería estar entre ${fmt(pMin, 0)} y ${fmt(pMax, 0)} mW.`);
+                }
+                if (est.maxMwCm2 && dPot > est.maxMwCm2) {
+                    avisos += avisoSalida('restriccion', `La densidad de potencia (${fmt(dPot, 0)} mW/cm²) supera el máximo de ${est.maxMwCm2} mW/cm² indicado para esta estructura. Aumente el área del haz o reduzca la potencia.`);
+                }
+                if (est.nota) avisos += avisoSalida('info', est.nota);
+                if (!porTotal) avisos += avisoSalida('info', 'Lectura "por punto": el documento WALT no aclara si los julios son por punto o totales. Esta lectura entrega una dosis total mayor; use la conservadora salvo que confirme el criterio con el documento original.');
+
+                salida.innerHTML = `<dl>
+                    ${filaSalida('Dosis de la tabla', `${fmt(est.joules, 1)} J`, `${est.puntos[0]} a ${est.puntos[1]} puntos${est.minPunto ? `; mínimo ${est.minPunto} J por punto` : ''}${est.maxMwCm2 ? `; máx. ${est.maxMwCm2} mW/cm²` : ''}`)}
+                    ${filaSalida('Dosis objetivo', `${fmt(dosis, 1)} J`, reducir ? 'con reducción del 30 %' : 'sin reducción')}
+                    ${filaSalida('Ventana terapéutica', `${fmt(ventana[0], 1)} a ${fmt(ventana[1], 1)} J`, 'valor objetivo ± 50 %; fuera de ella no se considera LLLT')}
+                    ${filaSalida('Energía total', `${fmt(totalJ, 1)} J`, `repartida en ${nP} punto(s)`)}
+                    ${filaSalida('Energía por punto', `${fmt(porPunto, 1)} J`)}
+                    ${filaSalida('Tiempo por punto', `${fmt(segundos, 0)} s`, `energía por punto ÷ potencia`)}
+                    ${filaSalida('Densidad de potencia', `${fmt(dPot, 0)} mW/cm²`, `potencia ÷ área del haz`)}
+                    ${filaSalida('Densidad de energía', `${fmt(dEne, 1)} J/cm²`, `energía por punto ÷ área del haz`)}
+                    ${filaSalida('Esquema', L.esquema)}
+                </dl>${avisos}`;
+                return;
+            }
+
+            if (precisionActual.tipo === "eswt") {
+                const S = D.dosimetria.ondas_choque;
+                const efd = num('pEefd'), imp = num('pEimp');
+                let html = "";
+                if (efd >= 0) {
+                    let cat = "baja";
+                    if (efd >= S.limites.alta[0]) cat = "alta";
+                    else if (efd >= S.limites.media[0]) cat = "media";
+                    html += filaSalida('Categoría de energía', `${cat.charAt(0).toUpperCase() + cat.slice(1)}`, `baja ${S.efd.baja}; media ${S.efd.media}; alta ${S.efd.alta} mJ/mm²`);
+                }
+                if (efd >= 0 && imp > 0) {
+                    html += filaSalida('Energía total por sesión', `${fmt(efd * imp, 1)} mJ/mm²`, `EFD × impulsos`);
+                }
+                html += filaSalida('Esquema', S.sesiones);
+                salida.innerHTML = `<dl>${html}</dl>${avisoSalida('info', 'La fuente consultada no informa impulsos por sesión, frecuencia (Hz) ni presión (bar). Use los valores del fabricante y la tolerancia del paciente.')}`;
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // MODO EJERCICIO TERAPÉUTICO
+        // ------------------------------------------------------------------
+        const pctDeRM = n => E.equivalenciaRM.a - E.equivalenciaRM.b * n;
+
+        function estimar1RM(f, carga, reps) {
+            if (f.tipo === 'mult') return carga * (f.a + f.b * reps);
+            const den = f.a - f.b * reps;
+            return den > 0.05 ? carga / den : NaN;
+        }
+
+        function leer1RM() {
+            if (el.rmModo.value === 'directo') {
+                const v = parseFloat(el.rmDirecto.value);
+                return v > 0 ? { valor: v, texto: "valor ingresado", fuente: false } : null;
+            }
+            const carga = parseFloat(el.rmCarga.value), reps = parseInt(el.rmReps.value, 10);
+            if (!(carga > 0) || !(reps >= 1)) return null;
+            const f = E.formulas1RM.find(x => x.id === el.rmFormula.value);
+            const v = estimar1RM(f, carga, reps);
+            if (!isFinite(v)) return { valor: null, texto: "no calculable", fuente: true, aviso: "Con esas repeticiones la fórmula elegida no es calculable. Use una carga que permita menos repeticiones." };
+            return {
+                valor: v, fuente: true,
+                texto: `${f.nombre}: ${fmt(carga)} kg × ${reps} repeticiones`,
+                aviso: reps > E.maxRepsValidez
+                    ? `Las fórmulas se validaron con 4 a 10 repeticiones. Con ${reps} repeticiones la estimación es menos fiable.`
+                    : null
+            };
+        }
+
+        function grupoEjercicio(p) {
+            for (const t of obtenerTags(p)) { if (E.tejidoAGrupo[t]) return E.tejidoAGrupo[t]; }
+            return "otros";
+        }
+
+        function rangoPorcentaje(o) {
+            let lo = o.pctMin, hi = o.pctMax;
+            if (lo === undefined && o.rm) { lo = Math.min(pctDeRM(o.rm[0]), pctDeRM(o.rm[1])); hi = Math.max(pctDeRM(o.rm[0]), pctDeRM(o.rm[1])); }
+            return [lo, hi];
+        }
+
+        function textoCarga(lo, hi, rm1, techo100) {
+            const pct = techo100 ? `≥ ${fmt(lo, 0)} %` : `${fmt(lo, 0)} - ${fmt(hi, 0)} %`;
+            if (!rm1) return `${pct} del 1RM <span class="block text-[11px] font-normal text-slate-400">Ingrese el 1RM para calcular los kilos</span>`;
+            const kLo = aMedioKg(rm1 * lo / 100), kHi = aMedioKg(rm1 * hi / 100);
+            return techo100
+                ? `${pct} del 1RM = ≥ ${fmt(kLo)} kg`
+                : `${pct} del 1RM = ${fmt(kLo)} - ${fmt(kHi)} kg`;
+        }
+
+        function calcularEjercicio(patologia, fase) {
+            const o = E.objetivos[estado.objetivo];
+            const grupo = grupoEjercicio(patologia);
+            const idx = E.ordenObjetivos.indexOf(estado.objetivo);
+            const bandera = E.matriz[grupo][fase][idx];
+            const mensajeGrupo = E.mensajes[grupo][fase];
+
+            el.resEtiqueta.textContent = "Ejercicio terapéutico";
+            el.resTitulo.textContent = o.nombre;
+            el.resSubtitulo.textContent =
+                `${patologia.n} (${D.clasificacion} ${patologia.c})  |  Fase ${D.fases[fase].etiqueta.toLowerCase()}`;
+            pintarBadgeFuente(o.estado);
+            el.precision.innerHTML = "";
+
+            // Banner de estado según tejido y antigüedad
+            const estiloBandera = {
+                I: { texto: "Indicado", caja: "bg-emerald-50 border-emerald-500 text-emerald-900" },
+                P: { texto: "Con precaución", caja: "bg-amber-50 border-amber-500 text-amber-900" },
+                N: { texto: "No indicado", caja: "bg-rose-50 border-rose-500 text-rose-900" }
+            }[bandera];
+            el.banner.className = `mx-6 mt-5 border-l-4 rounded-r-lg px-4 py-3 ${estiloBandera.caja}`;
+            el.banner.innerHTML = `<p class="text-[11px] font-semibold uppercase tracking-widest">${estiloBandera.texto} en este tejido y fase</p>
+                                   <p class="mt-1 text-sm leading-relaxed">${mensajeGrupo}</p>`;
+
+            const alertas = [];
+            const rmInfo = leer1RM();
+            const usaRM = ["carga", "bfr", "hsr"].includes(o.tipo);
+            const refs = [...o.ref];
+            if (usaRM && rmInfo?.fuente) refs.push("lacio_2010");
+            if (o.tipo === "hsr" || o.tipo === "alfredson") { /* ya incluye beyer_2015 */ }
+
+            if (bandera === "N") {
+                pintarBloqueo("No se genera prescripción para esta combinación", "Revise el objetivo, o el tejido y la antigüedad del diagnóstico.");
+            } else {
+                const filas = [];
+                if (usaRM) {
+                    filas.push(["rm1", rmInfo?.valor
+                        ? `${fmt(rmInfo.valor, 1)} kg <span class="block text-[11px] font-normal text-slate-400">${rmInfo.texto}</span>`
+                        : "No ingresado"]);
+                    if (rmInfo?.aviso) alertas.push({ nivel: "precaucion", titulo: "Estimación del 1RM", mensaje: rmInfo.aviso });
+                }
+                const rm1 = rmInfo?.valor || null;
+
+                if (o.tipo === "carga") {
+                    const [lo, hi] = rangoPorcentaje(o);
+                    filas.push(["carga", textoCarga(lo, hi, rm1, hi >= 100)]);
+                } else if (o.tipo === "bfr") {
+                    filas.push(["carga", textoCarga(o.pctMin, o.pctMax, rm1, false)]);
+                } else if (o.tipo === "hsr") {
+                    let sem = Math.round(parseFloat(el.hsrSemana.value) || 1);
+                    sem = Math.max(1, sem);
+                    const fila = E.hsrSemanas.find(s => sem >= s.desde && sem <= s.hasta) || E.hsrSemanas[E.hsrSemanas.length - 1];
+                    const pct = pctDeRM(fila.rm);
+                    const kg = rm1 ? ` = ${fmt(aMedioKg(rm1 * pct / 100))} kg` : "";
+                    filas.push(["carga", `${fila.rm} RM ≈ ${fmt(pct, 0)} % del 1RM${kg}<span class="block text-[11px] font-normal text-slate-400">Semana ${sem}${sem > 12 ? ' (más allá de las 12 semanas del protocolo: se mantiene la última etapa)' : ''}</span>`]);
+                    filas.push(["series", `${fila.series}`]);
+                    filas.push(["repeticiones", `${fila.rm} (carga de ${fila.rm} RM)`]);
+                    const prog = E.hsrSemanas.map(s => `${s.desde === s.hasta ? 'sem ' + s.desde : 'sem ' + s.desde + '-' + s.hasta}: ${s.series}×${s.rm} RM`).join(' | ');
+                    o._progresionTexto = prog;
+                } else if (o.carga) {
+                    filas.push(["carga", o.carga]);
+                }
+
+                if (o.tipo !== "hsr") {
+                    ["series", "repeticiones"].forEach(k => { if (o[k]) filas.push([k, o[k]]); });
+                }
+                ["tempo", "descanso"].forEach(k => { if (o[k]) filas.push([k, o[k]]); });
+                if (o.frecuenciaPorNivel) {
+                    filas.push(["frecuencia", `${E.niveles[el.nivel.value].frecuencia} (ACSM 2009)`]);
+                } else if (o.frecuencia) {
+                    filas.push(["frecuencia", o.frecuencia]);
+                }
+                ["ejercicios", "presion", "manguito"].forEach(k => { if (o[k]) filas.push([k, o[k]]); });
+                if (o.tipo === "hsr") filas.push(["progresion", o._progresionTexto]);
+                else if (o.progresion) filas.push(["progresion", o.progresion]);
+                if (["hsr", "alfredson", "isometrico"].includes(o.tipo)) filas.push(["dolor", E.reglaDolor]);
+
+                pintarFilas(filas);
+            }
+
+            if (bandera === "P") {
+                alertas.push({ nivel: "precaucion", titulo: "Prescripción con precaución", mensaje: "Este objetivo requiere criterio clínico adicional para este tejido y esta antigüedad. Inicie con el extremo más conservador del rango y monitorice la respuesta." });
+            }
+            if (obtenerTags(patologia).includes("pediatrico")) {
+                alertas.push({ nivel: "info", titulo: "Paciente pediátrico", mensaje: "Los valores provienen de estudios en adultos. En niños ajuste la carga, el volumen y la técnica según la edad y la madurez." });
+            }
+            if (o.notaFuente) alertas.push({ nivel: "info", titulo: "Sobre la fuente", mensaje: o.notaFuente });
+            alertas.push({ nivel: "info", titulo: "Criterio de progresión", mensaje: E.notaGeneral });
+            renderAlertas(alertas);
+
+            renderFuentes(refs, o.estado, null);
+        }
+
+        // ------------------------------------------------------------------
+        // CÁLCULO GENERAL
+        // ------------------------------------------------------------------
+        function calcular() {
+            const patologia = buscarPatologia(estado.codigo);
+            if (!patologia) return;
+            const fase = calcularFase(patologia);
+            renderFase(fase, patologia);
+            el.bloqueSemana.classList.toggle('hidden', estado.objetivo !== 'hsr');
+            const objetivo = E.objetivos[estado.objetivo];
+            el.bloque1RM.classList.toggle('hidden', !["carga", "bfr", "hsr"].includes(objetivo.tipo));
+            if (estado.modo === 'agente') calcularAgente(patologia, fase);
+            else calcularEjercicio(patologia, fase);
+        }
+
+        // ------------------------------------------------------------------
+        // EVENTOS
+        // ------------------------------------------------------------------
+        el.buscador.addEventListener('input', renderLista);
         el.buscador.addEventListener('keydown', e => {
             if (e.key === 'Enter') {
                 const primero = el.lista.querySelector('[data-codigo]');
@@ -381,32 +861,61 @@
             const btn = e.target.closest('[data-codigo]');
             if (!btn) return;
             estado.codigo = btn.dataset.codigo;
-            renderLista();
-            renderSeleccion();
-            calcular();
+            renderLista(); renderSeleccion(); calcular();
         });
 
         el.agentes.addEventListener('click', e => {
             const btn = e.target.closest('[data-agente]');
             if (!btn) return;
             estado.agente = btn.dataset.agente;
-            renderAgentes();
-            calcular();
+            renderAgentes(); calcular();
         });
+
+        el.objetivos.addEventListener('click', e => {
+            const btn = e.target.closest('[data-objetivo]');
+            if (!btn) return;
+            estado.objetivo = btn.dataset.objetivo;
+            renderObjetivos(); calcular();
+        });
+
+        el.modoAgente.addEventListener('click', () => { estado.modo = 'agente'; renderModo(); calcular(); });
+        el.modoEjercicio.addEventListener('click', () => { estado.modo = 'ejercicio'; renderModo(); calcular(); });
 
         el.tiempoValor.addEventListener('input', calcular);
         el.tiempoUnidad.addEventListener('change', calcular);
-        document.getElementById('btnImprimir').addEventListener('click', () => window.print());
 
-        // Inicio
-        document.getElementById('etiquetaClasificacion').textContent =
-            `${D.patologias.length} diagnósticos (${D.clasificacion})`;
-        document.getElementById('pieVersion').textContent =
+        el.rmModo.addEventListener('change', () => {
+            const directo = el.rmModo.value === 'directo';
+            el.rmDirectoCaja.classList.toggle('hidden', !directo);
+            el.rmEstimarCaja.classList.toggle('hidden', directo);
+            calcular();
+        });
+        [el.rmDirecto, el.rmCarga, el.rmReps, el.hsrSemana].forEach(x => x.addEventListener('input', calcular));
+        [el.rmFormula, el.nivel].forEach(x => x.addEventListener('change', calcular));
+
+        // Los campos del cálculo de precisión no reconstruyen el panel (se conserva el foco)
+        el.precision.addEventListener('input', calcPrecision);
+        el.precision.addEventListener('change', calcPrecision);
+
+        $('btnImprimir').addEventListener('click', () => window.print());
+
+        // ------------------------------------------------------------------
+        // INICIO
+        // ------------------------------------------------------------------
+        el.rmFormula.innerHTML = E.formulas1RM.map(f =>
+            `<option value="${f.id}" ${f.id === E.formulaPorDefecto ? 'selected' : ''}>${f.nombre}</option>`).join('');
+        el.nivel.innerHTML = Object.entries(E.niveles).map(([id, n]) =>
+            `<option value="${id}">${n.nombre}</option>`).join('');
+
+        $('etiquetaClasificacion').textContent = `${D.patologias.length} diagnósticos (${D.clasificacion})`;
+        $('pieVersion').textContent =
             `Base de datos clínica v${D.version} | Actualizada el ${D.fecha} | Clasificación ${D.clasificacion}`;
 
         renderLista();
         renderSeleccion();
         renderAgentes();
+        renderObjetivos();
+        renderModo();
         calcular();
     </script>
 </body>
