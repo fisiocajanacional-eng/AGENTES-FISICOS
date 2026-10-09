@@ -28,8 +28,8 @@
 
 window.DATOS_FISIO = {
 
-  version: "1.1",
-  fecha: "2026-10-08",
+  version: "2.0",
+  fecha: "2026-10-09",
   clasificacion: "CIE-10",
 
   fases: {
@@ -39,9 +39,11 @@ window.DATOS_FISIO = {
   },
 
   agentes: [
-    { id: "electroterapia",    nombre: "Electroterapia" },
+    { id: "electroterapia",    nombre: "Electroterapia (TENS)" },
+    { id: "nmes",              nombre: "Electroestimulación (NMES)" },
     { id: "ultrasonido",       nombre: "Ultrasonido" },
     { id: "terapia_combinada", nombre: "Terapia combinada" },
+    { id: "laser",             nombre: "Láser de baja intensidad" },
     { id: "magnetoterapia",    nombre: "Campo magnético" },
     { id: "ondas_choque",      nombre: "Ondas de choque" },
     { id: "alta_frecuencia",   nombre: "Alta frecuencia (Tecar)" },
@@ -325,43 +327,516 @@ window.DATOS_FISIO = {
     }
   },
 
-  // Parámetros por agente físico y fase
+  // Parámetros por agente físico y fase.
+  //   ref        = claves del bloque "fuentes"
+  //   estado     = verificada (se consultó la fuente primaria)
+  //                parcial    (parte del valor es criterio de progresión, no texto de la fuente)
+  //                pendiente  (referencia general; sin fuente primaria verificada)
+  //   notaFuente = aclaración de qué respalda y qué no respalda la fuente
+  //   Una fila con clave "*" aplica a todas las fases.
   dosificacion: {
+
     electroterapia: {
-      aguda:    { modalidad: "TENS convencional (analgesia)", frecuencia: "80 - 120 Hz", intensidad: "Sensitiva (sin contracción)", tiempo: "15 - 20 minutos" },
-      subaguda: { modalidad: "Corriente interferencial bipolar", frecuencia: "50 - 80 Hz", intensidad: "Sensitiva mantenida", tiempo: "20 minutos" },
-      cronica:  { modalidad: "TENS endorfínico o corrientes motoras", frecuencia: "1 - 10 Hz", intensidad: "Motora (contracción visible y tolerable)", tiempo: "25 - 30 minutos" }
+      aguda: {
+        modalidad: "TENS de alta frecuencia (analgesia)",
+        frecuencia: "Alta frecuencia (> 100 Hz; ejemplo de ensayo: 100 Hz)",
+        ancho_pulso: "200 µs (ejemplo de ensayo)",
+        intensidad: "Fuerte pero cómoda, sin contracción muscular",
+        tiempo: "30 minutos (ejemplo de ensayo en dolor agudo)",
+        ref: ["vance_2022"], estado: "parcial",
+        notaFuente: "La revisión no fija una dosis única: describe dosis de ensayos individuales (p. ej. 100 Hz, 200 µs, 30 min en dolor agudo por fractura de fémur). La asignación a la fase aguda es criterio de progresión."
+      },
+      subaguda: {
+        modalidad: "TENS de frecuencia mixta (alternando baja y alta)",
+        frecuencia: "Alternar baja (< 10 Hz, p. ej. 2 Hz) y alta (≈ 100 Hz)",
+        ancho_pulso: "200 µs (ejemplo de ensayo)",
+        intensidad: "Fuerte pero cómoda; subir al menos 10 % si disminuye la sensación (tolerancia)",
+        tiempo: "20 - 30 minutos",
+        ref: ["vance_2022"], estado: "parcial",
+        notaFuente: "Vance 2022 describe el modo mixto para limitar la tolerancia y sesiones de 20 a 30 min en distintos ensayos. La asignación a la fase subaguda es criterio de progresión."
+      },
+      cronica: {
+        modalidad: "TENS de baja frecuencia o de frecuencia mixta",
+        frecuencia: "Baja (< 10 Hz) o modo mixto",
+        ancho_pulso: "200 µs (ejemplo de ensayo)",
+        intensidad: "Fuerte pero cómoda; variar los parámetros si se aplica a diario (la tolerancia aparece en pocos días)",
+        tiempo: "20 - 30 minutos",
+        ref: ["vance_2022"], estado: "parcial",
+        notaFuente: "La revisión advierte que la misma dosis diaria puede generar tolerancia en pocos días y que la magnitud del efecto es incierta por la baja calidad de la evidencia."
+      }
     },
+
+    nmes: {
+      "*": {
+        modalidad: "Electroestimulación neuromuscular (revisión sobre cuádriceps; extrapolar a otros grupos con criterio clínico)",
+        frecuencia: "30 - 50 Hz",
+        ancho_pulso: "400 - 600 µs (resumen del artículo); 200 - 400 µs (conclusión). El artículo no resuelve la diferencia",
+        intensidad: "La mayor tolerable, buscando una fuerza evocada superior al 50 % de la contracción voluntaria máxima",
+        tiempo: "Ciclo de 10 s de contracción y 50 s de reposo (1:5). Duración de sesión y número de sesiones: no especificados en la fuente",
+        electrodos: "≈ 20 cm² (los más cómodos para el cuádriceps)",
+        ref: ["glaviano_2016"], estado: "parcial",
+        notaFuente: "Los rangos de amplitud (mA) de las tablas del artículo provienen de estudios individuales y no son una recomendación."
+      }
+    },
+
     ultrasonido: {
-      aguda:    { modalidad: "Pulsado (ciclo de trabajo 20 %)", frecuencia: "3 MHz (superficial) / 1 MHz (profundo)", intensidad: "0.2 - 0.5 W/cm²", tiempo: "1.5 min por área de cabezal" },
-      subaguda: { modalidad: "Pulsado (ciclo de trabajo 50 %)", frecuencia: "Según profundidad de la estructura", intensidad: "0.5 - 0.8 W/cm²", tiempo: "2 min por área de cabezal" },
-      cronica:  { modalidad: "Continuo (efecto térmico y mecánico)", frecuencia: "1 MHz (generalmente profundo)", intensidad: "1.0 - 1.5 W/cm²", tiempo: "5 - 8 minutos totales" }
+      aguda: {
+        modalidad: "Pulsado, razón 1:4 o 1:3 (ciclo de trabajo 20 - 25 %)",
+        frecuencia: "3 MHz (lesión superficial) / 1 MHz (profunda; límite aproximado: 2 cm)",
+        intensidad: "≈ 0.2 W/cm² en la lesión (dosis no térmica)",
+        tiempo: "1 min × n.º de áreas de cabezal × (suma de la razón de pulso). Ejemplo: 1 área, 1:4 → 5 min",
+        ref: ["watson_us"], estado: "verificada",
+        notaFuente: "Valores de los ejemplos de Watson. La intensidad indicada es la requerida en la lesión; en lesiones profundas la intensidad en superficie debe ser mayor para compensar la atenuación. Profundidad de semivalor: ≈ 2.5 cm a 3 MHz y ≈ 4.0 cm a 1 MHz."
+      },
+      subaguda: {
+        modalidad: "Pulsado, razón 1:2 o 1:1 (ciclo de trabajo 33 - 50 %)",
+        frecuencia: "3 MHz (superficial) / 1 MHz (profunda)",
+        intensidad: "≈ 0.4 W/cm² en la lesión (dosis no térmica)",
+        tiempo: "1 min × n.º de áreas de cabezal × (suma de la razón de pulso). Ejemplo: 2 áreas, 1:2 → 6 min",
+        ref: ["watson_us"], estado: "verificada",
+        notaFuente: "Valores de los ejemplos de Watson (intensidad requerida en la lesión)."
+      },
+      cronica: {
+        modalidad: "Pulsado 1:1 o continuo",
+        frecuencia: "1 MHz (profunda) / 3 MHz (superficial)",
+        intensidad: "≈ 0.5 W/cm² en la lesión; ≥ 0.6 W/cm² en cronicidad marcada con emisión continua",
+        tiempo: "1 min × n.º de áreas de cabezal × (suma de la razón de pulso). Ejemplos: 2 áreas, 1:1 → 4 min; 3 áreas, continuo → 3 min",
+        ref: ["watson_us"], estado: "verificada",
+        notaFuente: "Valores de los ejemplos de Watson (dosis no térmicas). Los protocolos térmicos de ultrasonido continuo a mayor intensidad no están cubiertos por la fuente consultada."
+      }
     },
+
     terapia_combinada: {
-      aguda:    { modalidad: "US pulsado (20 %) + TENS / interferencial sensitivo", frecuencia: "US 3 MHz | Corriente 80 - 100 Hz", intensidad: "US 0.2 - 0.4 W/cm² | Corriente sensitiva", tiempo: "5 - 8 minutos" },
-      subaguda: { modalidad: "US pulsado (50 %) + interferencial", frecuencia: "US 1 - 3 MHz | Corriente 50 - 100 Hz", intensidad: "US 0.5 - 0.8 W/cm² | Corriente sensitiva a motora", tiempo: "8 - 10 minutos" },
-      cronica:  { modalidad: "US continuo + interferencial o corriente motora", frecuencia: "US 1 MHz | Corriente 1 - 10 Hz (motora) u 80 - 100 Hz (analgesia)", intensidad: "US 1.0 - 1.5 W/cm² | Corriente motora tolerable", tiempo: "8 - 10 minutos" }
+      aguda: {
+        modalidad: "US pulsado 1:4 + TENS de alta frecuencia, aplicados simultáneamente",
+        frecuencia: "US 3 MHz (1 MHz si es profundo) | Corriente ≈ 100 Hz, 200 µs",
+        intensidad: "US ≈ 0.2 W/cm² | Corriente fuerte pero cómoda, sin contracción",
+        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × 5. La corriente acompaña ese tiempo",
+        ref: ["watson_us", "vance_2022"], estado: "pendiente",
+        notaFuente: "No se encontró un protocolo combinado verificado: se componen las dosis individuales de cada agente. Confirme con el manual de su equipo."
+      },
+      subaguda: {
+        modalidad: "US pulsado 1:2 o 1:1 + TENS de frecuencia mixta",
+        frecuencia: "US 1 - 3 MHz | Corriente mixta (< 10 Hz y ≈ 100 Hz), 200 µs",
+        intensidad: "US ≈ 0.4 W/cm² | Corriente fuerte pero cómoda",
+        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × (suma de la razón de pulso)",
+        ref: ["watson_us", "vance_2022"], estado: "pendiente",
+        notaFuente: "No se encontró un protocolo combinado verificado: se componen las dosis individuales de cada agente."
+      },
+      cronica: {
+        modalidad: "US pulsado 1:1 o continuo + TENS de baja frecuencia o mixto",
+        frecuencia: "US 1 MHz | Corriente < 10 Hz o mixta, 200 µs",
+        intensidad: "US ≈ 0.5 W/cm² o más | Corriente fuerte pero cómoda",
+        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × (suma de la razón de pulso)",
+        ref: ["watson_us", "vance_2022"], estado: "pendiente",
+        notaFuente: "No se encontró un protocolo combinado verificado: se componen las dosis individuales de cada agente."
+      }
     },
+
+    laser: {
+      "*": {
+        modalidad: "Láser de baja intensidad Clase 3B (fotobiomodulación), 780 - 860 nm",
+        frecuencia: "Emisión continua o pulsada; potencia media de 5 a 500 mW",
+        intensidad: "Dosis según la estructura (tabla WALT; use el cálculo de precisión). Máximo 100 mW/cm² en epicondilitis, tracto iliotibial y Aquiles. Reducir la dosis un 30 % cuando la inflamación esté controlada",
+        tiempo: "20 a 300 segundos de irradiación. Diario durante 2 semanas, o en días alternos durante 3 a 4 semanas",
+        ref: ["walt_2010"], estado: "verificada",
+        notaFuente: "La ventana terapéutica es de ± 50 % de la dosis de la tabla; fuera de ella no se considera LLLT. Las dosis son para piel blanca. El documento no aclara si los julios son por punto o totales: el cálculo de precisión aplica por defecto la lectura conservadora."
+      }
+    },
+
     magnetoterapia: {
-      aguda:    { modalidad: "Emisión pulsada (efecto antiedematoso)", frecuencia: "5 - 15 Hz", intensidad: "20 - 40 Gauss", tiempo: "30 minutos" },
-      subaguda: { modalidad: "Emisión continua o pulsada", frecuencia: "20 - 50 Hz", intensidad: "40 - 60 Gauss", tiempo: "30 - 40 minutos" },
-      cronica:  { modalidad: "Emisión continua (efecto trófico)", frecuencia: "50 - 100 Hz", intensidad: "60 - 100 Gauss", tiempo: "45 minutos" }
+      aguda: { modalidad: "Emisión pulsada (efecto antiedematoso)", frecuencia: "5 - 15 Hz", intensidad: "20 - 40 Gauss", tiempo: "30 minutos", ref: ["general"], estado: "pendiente" },
+      subaguda: { modalidad: "Emisión continua o pulsada", frecuencia: "20 - 50 Hz", intensidad: "40 - 60 Gauss", tiempo: "30 - 40 minutos", ref: ["general"], estado: "pendiente" },
+      cronica: { modalidad: "Emisión continua (efecto trófico)", frecuencia: "50 - 100 Hz", intensidad: "60 - 100 Gauss", tiempo: "45 minutos", ref: ["general"], estado: "pendiente" }
     },
+
     ondas_choque: {
-      aguda:    { bloqueo: true, mensaje: "Las ondas de choque no se aplican en fases inflamatorias agudas." },
-      subaguda: { bloqueo: true, mensaje: "No recomendadas en fase subaguda. Se prefiere esperar a la fase crónica, cuando el tejido ya está consolidado." },
-      cronica:  { modalidad: "Radial o focal (según profundidad)", frecuencia: "4 - 8 Hz", intensidad: "1.5 - 3.0 bar / densidad de flujo media", tiempo: "2000 - 3000 disparos (una sesión semanal)" }
+      aguda: {
+        bloqueo: true,
+        mensaje: "Criterio de prudencia general: no se recomienda iniciar ondas de choque en fase inflamatoria aguda. Este criterio no figura en la fuente consultada.",
+        ref: ["tenforde_2022"], estado: "pendiente"
+      },
+      subaguda: {
+        bloqueo: true,
+        mensaje: "Criterio de prudencia general: se prefiere esperar a la fase crónica. Este criterio no figura en la fuente consultada.",
+        ref: ["tenforde_2022"], estado: "pendiente"
+      },
+      cronica: {
+        modalidad: "Focal o radial (ambas con eficacia descrita en fascitis plantar y tendinopatías)",
+        frecuencia: "Impulsos y frecuencia por sesión: no especificados en la fuente consultada",
+        intensidad: "Iniciar con energía baja y titular según tolerancia. Densidad de flujo de energía (EFD): baja < 0.08, media 0.08 - 0.28, alta > 0.29 - 0.60 mJ/mm². Tendinopatías: baja a media. Tendinopatía calcificante y trastornos óseos: alta",
+        tiempo: "3 - 5 sesiones, con intervalo de 1 semana. Energía total = EFD × n.º de impulsos",
+        ref: ["tenforde_2022"], estado: "parcial",
+        notaFuente: "El artículo imprime el rango bajo como '<0.08-10' (probable errata) y advierte que los puntos de corte varían entre autores. No informa impulsos por sesión, frecuencia (Hz) ni presión (bar)."
+      }
     },
+
     alta_frecuencia: {
-      aguda:    { modalidad: "Capacitiva atérmica (bioestimulación celular)", frecuencia: "448 kHz aprox.", intensidad: "Escala térmica grado 0 (sin calor detectable)", tiempo: "10 - 15 minutos" },
-      subaguda: { modalidad: "Capacitiva o resistiva térmica suave", frecuencia: "448 kHz", intensidad: "Escala térmica grado 1 - 2 (calor muy leve)", tiempo: "15 - 20 minutos" },
-      cronica:  { modalidad: "Resistiva hipertérmica (flexibilización del colágeno)", frecuencia: "448 kHz", intensidad: "Escala térmica grado 3 (calor intenso pero confortable)", tiempo: "20 minutos" }
+      aguda: { modalidad: "Capacitiva atérmica (bioestimulación celular)", frecuencia: "448 kHz aprox.", intensidad: "Escala térmica grado 0 (sin calor detectable)", tiempo: "10 - 15 minutos", ref: ["general"], estado: "pendiente" },
+      subaguda: { modalidad: "Capacitiva o resistiva térmica suave", frecuencia: "448 kHz", intensidad: "Escala térmica grado 1 - 2 (calor muy leve)", tiempo: "15 - 20 minutos", ref: ["general"], estado: "pendiente" },
+      cronica: { modalidad: "Resistiva hipertérmica (flexibilización del colágeno)", frecuencia: "448 kHz", intensidad: "Escala térmica grado 3 (calor intenso pero confortable)", tiempo: "20 minutos", ref: ["general"], estado: "pendiente" }
     },
+
     onda_corta: {
-      aguda:    { modalidad: "Pulsada atérmica (inductiva)", frecuencia: "Baja frecuencia de pulso", intensidad: "Potencia media baja", tiempo: "15 minutos" },
-      subaguda: { modalidad: "Pulsada con ligero gradiente térmico", frecuencia: "Media frecuencia de pulso", intensidad: "Potencia moderada", tiempo: "15 - 20 minutos" },
-      cronica:  { modalidad: "Continua (térmica profunda, campo condensador)", frecuencia: "Emisión constante", intensidad: "Sensación térmica agradable", tiempo: "20 minutos" }
+      aguda: { modalidad: "Pulsada atérmica (inductiva)", frecuencia: "Baja frecuencia de pulso", intensidad: "Potencia media baja", tiempo: "15 minutos", ref: ["general"], estado: "pendiente" },
+      subaguda: { modalidad: "Pulsada con ligero gradiente térmico", frecuencia: "Media frecuencia de pulso", intensidad: "Potencia moderada", tiempo: "15 - 20 minutos", ref: ["general"], estado: "pendiente" },
+      cronica: { modalidad: "Continua (térmica profunda, campo condensador)", frecuencia: "Emisión constante", intensidad: "Sensación térmica agradable", tiempo: "20 minutos", ref: ["general"], estado: "pendiente" }
     }
+  },
+
+  /*
+    FUENTES
+    Cada dosificación indica en "ref" las claves de este bloque.
+    estado: verificada = se consultó el documento | pendiente = referencia general sin fuente primaria verificada
+  */
+  fuentes: {
+    general: {
+      cita: "Valores de referencia general de la práctica fisioterapéutica.",
+      detalle: "No se verificó una fuente primaria en esta versión. Confirme con el manual del equipo y la literatura antes de aplicarlos en clínica.",
+      estado: "pendiente"
+    },
+    watson_us: {
+      cita: "Watson T. Ultrasound dose calculations. Electrotherapy Association (electrotherapy.org).",
+      url: "https://www.electrotherapy.org/ultrasound-dose-calculations",
+      detalle: "Método de cálculo del tiempo (1 min por área de cabezal × factor de pulso), razones de pulso por fase e intensidades de los ejemplos. La página consultada no incluye fórmulas de ERA ni de energía total: esas magnitudes se calculan aquí como definiciones físicas (potencia = intensidad × área; energía = potencia × tiempo).",
+      estado: "verificada"
+    },
+    walt_2010: {
+      cita: "World Association of Laser Therapy (WALT). Recommended treatment doses for Low Level Laser Therapy, 780-860 nm. Revisión de abril de 2010.",
+      url: "https://waltpbm.org/wp-content/uploads/2021/08/Dose_table_780-860nm_for_Low_Level_Laser_Therapy_WALT-2010.pdf",
+      detalle: "Tabla de dosis por estructura, mínimos por punto, límite de 100 mW/cm², tiempo de irradiación de 20 a 300 s, ventana terapéutica de ± 50 % y reducción del 30 % al controlar la inflamación. El documento no indica si la columna de julios es dosis por punto o total del área; esta herramienta aplica por defecto la lectura conservadora (total del área) y permite cambiarla. La tabla de 904 nm no se incluyó porque sus unidades eran ambiguas en la copia consultada.",
+      estado: "verificada"
+    },
+    tenforde_2022: {
+      cita: "Tenforde AS, Borgstrom HE, DeLuca S, McCormack M, Singh M, Soo Hoo J, Yun PH. Best practices for extracorporeal shockwave therapy in musculoskeletal medicine: clinical application and training consideration. PM&R. 2022;14(5):611-619. doi:10.1002/pmrj.12790.",
+      url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC9321712",
+      detalle: "Categorías de densidad de flujo de energía, esquema de 3 a 5 sesiones semanales, titulación desde energía baja y contraindicaciones.",
+      estado: "verificada"
+    },
+    glaviano_2016: {
+      cita: "Glaviano NR, Saliba S. Can the use of neuromuscular electrical stimulation be improved to optimize quadriceps strengthening? Sports Health. 2016;8(1):79-85. doi:10.1177/1941738115618174.",
+      url: "https://doi.org/10.1177/1941738115618174",
+      detalle: "Frecuencia, ancho de pulso, ciclo de trabajo e intensidad relativa para NMES de cuádriceps.",
+      estado: "verificada"
+    },
+    vance_2022: {
+      cita: "Vance CGT, Dailey DL, Chimenti RL, Van Gorp BJ, Crofford LJ, Sluka KA. Using TENS for pain control: update on the state of the evidence. Medicina (Kaunas). 2022;58(10):1332. doi:10.3390/medicina58101332.",
+      url: "https://doi.org/10.3390/medicina58101332",
+      detalle: "Definición de frecuencias, descripción de la intensidad, ejemplos de dosis de ensayos y tolerancia con el uso diario.",
+      estado: "verificada"
+    },
+    acsm_2009: {
+      cita: "American College of Sports Medicine. Position Stand: Progression models in resistance training for healthy adults. Med Sci Sports Exerc. 2009;41(3):687-708.",
+      url: "https://www.sportgeneeskunde.com/wp-content/uploads/ACSM-Position-Stand-Progression-Models-in-Resistance-Training-for-Healthy-Adults.pdf",
+      detalle: "Carga, descanso, velocidad y frecuencia por objetivo y nivel de entrenamiento. En la copia consultada algunos caracteres de la sección de resistencia muscular eran ilegibles; esos valores figuran como parciales.",
+      estado: "verificada"
+    },
+    acsm_2026: {
+      cita: "Phillips SM (chair), Currier BS, D'Souza AC, Fiatarone Singh MA, Lowisz CV, Rawson ES, Schoenfeld BJ, Smith-Ryan AE, Steen JP, Thomas GA, Triplett NT, Washington TA, Werner TJ. Resistance training prescription for muscle function, hypertrophy, and physical performance in healthy adults: an overview of reviews. Med Sci Sports Exerc. Abril de 2026.",
+      url: "https://acsm.org/science-spotlight-acsm-releases-new-position-stand-on-resistance-training/",
+      detalle: "Se consultó la presentación resumen publicada por ACSM, no el texto completo. Actualiza la postura de 2009 para adultos sanos.",
+      estado: "verificada"
+    },
+    lacio_2010: {
+      cita: "Lacio et al. (2010). Motricidade. Comparación de ecuaciones de predicción de 1RM en press de banca (O'Conner 1989, Baechle y Groves 2000, Epley, Brzycki 1993, Lander 1985, Adams 1994).",
+      url: "https://www.redalyc.org/pdf/2730/273019708005.pdf",
+      detalle: "Fórmulas tal como las publica el estudio. Validado en 31 varones con 4 a 10 repeticiones; el propio estudio recomienda probarlas en mujeres, adolescentes y adultos mayores.",
+      estado: "verificada"
+    },
+    rio_2015: {
+      cita: "Rio E, Kidgell D, Purdam C, Gaida J, Moseley GL, Pearce AJ, Cook J. Isometric exercise induces analgesia and reduces inhibition in patellar tendinopathy. Br J Sports Med. 2015. doi:10.1136/bjsports-2014-094386.",
+      url: "https://doi.org/10.1136/bjsports-2014-094386",
+      detalle: "Estudio cruzado en 6 atletas con tendinopatía rotuliana. Extrapolar a otros tendones es criterio clínico.",
+      estado: "verificada"
+    },
+    beyer_2015: {
+      cita: "Beyer R, Kongsgaard M, Hougs Kjær B, Øhlenschlæger T, Kjær M, Magnusson SP. Heavy slow resistance versus eccentric training as treatment for Achilles tendinopathy: a randomized controlled trial. Am J Sports Med. 2015;43(7):1704-1711.",
+      detalle: "Ensayo en 58 pacientes con tendinopatía aquílea de la porción media. Protocolo de carga lenta y pesada (HSR) y protocolo excéntrico de Alfredson, con reglas de dolor.",
+      estado: "verificada"
+    },
+    patterson_2019: {
+      cita: "Patterson SD, Hughes L, Warmington S, Burr J, Scott BR, Owens J, Abe T, Nielsen JL, Libardi CA, Laurentino G, Neto GR, Brandner C, Martin-Hernandez J, Loenneke J. Blood flow restriction exercise: considerations of methodology, application, and safety. Front Physiol. 2019;10:533. doi:10.3389/fphys.2019.00533.",
+      url: "https://doi.org/10.3389/fphys.2019.00533",
+      detalle: "Carga, esquema de repeticiones, descanso, frecuencia, presión relativa a la oclusión arterial y ancho de manguito. El documento no incluye una lista explícita de contraindicaciones.",
+      estado: "verificada"
+    }
+  },
+
+  /*
+    DOSIMETRÍA DE PRECISIÓN (cálculos opcionales)
+  */
+  dosimetria: {
+
+    // Ultrasonido: método de Watson (1 minuto de energía por cada área de cabezal)
+    ultrasonido: {
+      minutosPorArea: 1,
+      factorPulso: { "1:4": 5, "1:3": 4, "1:2": 3, "1:1": 2, "continuo": 1 },
+      porFase: {
+        aguda:    { razon: "1:4",      intensidad: 0.2, mhz: 3 },
+        subaguda: { razon: "1:2",      intensidad: 0.4, mhz: 3 },
+        cronica:  { razon: "1:1",      intensidad: 0.5, mhz: 1 }
+      },
+      semivalor_cm: { "1": 4.0, "3": 2.5 },
+      ref: ["watson_us"]
+    },
+
+    // Láser de baja intensidad: tabla WALT 780 - 860 nm
+    laser: {
+      ref: ["walt_2010"],
+      longitud_onda: "780 - 860 nm (Clase 3B, GaAlAs)",
+      tiempo_irradiacion_s: [20, 300],
+      reduccion_control_inflamacion: 0.30,
+      ventana: 0.50,
+      esquema: "Diario durante 2 semanas, o en días alternos durante 3 a 4 semanas",
+      // joules = valor de la tabla | puntos = [min, max] | minPunto = J mínimos por punto | maxMwCm2 = límite de densidad de potencia
+      estructuras: [
+        { id: "tunel_carpiano",    nombre: "Túnel carpiano",                grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  minPunto: 4, cie: ["G56.0"] },
+        { id: "epicondilitis",     nombre: "Epicondilitis lateral",         grupo: "Tendinopatías", puntos: [1, 2], joules: 4,  maxMwCm2: 100, cie: ["M77.1", "M77.0"] },
+        { id: "biceps",            nombre: "Tendón largo del bíceps",       grupo: "Tendinopatías", puntos: [1, 2], joules: 6,  cie: ["M75.2"] },
+        { id: "supraespinoso",     nombre: "Supraespinoso",                 grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  minPunto: 4, cie: ["M75.1", "M75.3", "M75.4", "S46.0"] },
+        { id: "infraespinoso",     nombre: "Infraespinoso",                 grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  minPunto: 4, cie: [] },
+        { id: "trocanter",         nombre: "Trocánter mayor",               grupo: "Tendinopatías", puntos: [2, 4], joules: 8,  cie: ["M70.6", "M76.0"] },
+        { id: "rotuliano",         nombre: "Tendón rotuliano",              grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  cie: ["M76.5"] },
+        { id: "tracto_iliotibial", nombre: "Tracto iliotibial",             grupo: "Tendinopatías", puntos: [1, 2], joules: 4,  maxMwCm2: 100, cie: ["M76.3"] },
+        { id: "aquiles",           nombre: "Tendón de Aquiles",             grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  maxMwCm2: 100, cie: ["M76.6", "S86.0"] },
+        { id: "fascitis_plantar",  nombre: "Fascitis plantar",              grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  minPunto: 4, cie: ["M72.2", "M77.3"] },
+
+        { id: "dedo",              nombre: "Dedo (IFP o MCF)",              grupo: "Articulaciones", puntos: [1, 2], joules: 4,  cie: ["M65.3", "S63.6"] },
+        { id: "muneca",            nombre: "Muñeca",                        grupo: "Articulaciones", puntos: [2, 4], joules: 8,  cie: ["M65.4"] },
+        { id: "humerorradial",     nombre: "Articulación humerorradial",    grupo: "Articulaciones", puntos: [1, 2], joules: 4,  cie: [] },
+        { id: "codo",              nombre: "Codo",                          grupo: "Articulaciones", puntos: [2, 4], joules: 8,  cie: ["M70.2"], nota: "El documento imprime '2.4' como número de puntos; se interpreta como 2 a 4." },
+        { id: "glenohumeral",      nombre: "Articulación glenohumeral",     grupo: "Articulaciones", puntos: [2, 4], joules: 8,  minPunto: 4, cie: ["M75.0", "M75.5"] },
+        { id: "acromioclavicular", nombre: "Articulación acromioclavicular", grupo: "Articulaciones", puntos: [1, 2], joules: 4, cie: ["S43.1"] },
+        { id: "atm",               nombre: "Articulación temporomandibular", grupo: "Articulaciones", puntos: [1, 2], joules: 4, cie: ["M26.6"] },
+        { id: "cervical",          nombre: "Columna cervical",              grupo: "Articulaciones", puntos: [4, 12], joules: 16, minPunto: 4, cie: ["M54.2", "M50.1", "M50.2", "M53.1"] },
+        { id: "lumbar",            nombre: "Columna lumbar",                grupo: "Articulaciones", puntos: [4, 8], joules: 16, minPunto: 4, cie: ["M54.5", "M51.1", "M51.2", "M47.8", "M48.0", "S33.5"] },
+        { id: "cadera",            nombre: "Cadera",                        grupo: "Articulaciones", puntos: [2, 4], joules: 12, minPunto: 6, cie: ["M16.9"] },
+        { id: "rodilla",           nombre: "Rodilla (compartimento medial)", grupo: "Articulaciones", puntos: [3, 6], joules: 12, minPunto: 4, cie: ["M17.9", "M22.2", "M94.2", "M23.5"] },
+        { id: "tobillo",           nombre: "Tobillo",                       grupo: "Articulaciones", puntos: [2, 4], joules: 8,  cie: ["S93.4"] }
+      ]
+    },
+
+    // Ondas de choque: Tenforde 2022
+    ondas_choque: {
+      efd: { baja: "< 0.08", media: "0.08 - 0.28", alta: "> 0.29 - 0.60" },
+      limites: { media: [0.08, 0.28], alta: [0.29, 0.60] },
+      sesiones: "3 a 5, con intervalo de 1 semana",
+      ref: ["tenforde_2022"]
+    }
+  },
+
+  /*
+    EJERCICIO TERAPÉUTICO
+    Carga prescrita con porcentaje del 1RM (o RM), ajustada por tejido lesionado y antigüedad.
+  */
+  ejercicio: {
+
+    // Estimación de 1RM a partir de una carga submáxima y las repeticiones realizadas (Lacio 2010).
+    //   tipo "mult": 1RM = carga × (a + b × reps)   |   tipo "div": 1RM = carga / (a − b × reps)
+    formulas1RM: [
+      { id: "epley",    nombre: "Epley",              tipo: "mult", a: 1,     b: 0.033333 },
+      { id: "brzycki",  nombre: "Brzycki",            tipo: "div",  a: 1.0278, b: 0.0278 },
+      { id: "lander",   nombre: "Lander",             tipo: "div",  a: 1.013,  b: 0.0267123 },
+      { id: "oconner",  nombre: "O'Conner",           tipo: "mult", a: 1,     b: 0.025 },
+      { id: "baechle",  nombre: "Baechle y Groves",   tipo: "mult", a: 0.978, b: 0.0375 },
+      { id: "adams",    nombre: "Adams",              tipo: "div",  a: 1,     b: 0.02 }
+    ],
+    formulaPorDefecto: "epley",
+    maxRepsValidez: 10,
+    // Equivalencia entre n.º de repeticiones máximas (RM) y %1RM: Brzycki, %1RM = 102.78 − 2.78 × n
+    equivalenciaRM: { a: 102.78, b: 2.78 },
+
+    // Frecuencia semanal por nivel de entrenamiento (ACSM 2009)
+    niveles: {
+      novato:     { nombre: "Principiante", frecuencia: "2 - 3 días/semana" },
+      intermedio: { nombre: "Intermedio (≈ 6 meses de entrenamiento)", frecuencia: "3 - 4 días/semana" },
+      avanzado:   { nombre: "Avanzado (años de entrenamiento)", frecuencia: "4 - 5 días/semana" }
+    },
+
+    // Orden de las columnas de la matriz de progresión: ver "ordenObjetivos"
+    ordenObjetivos: ["isometrico", "hsr", "alfredson", "fuerza", "hipertrofia", "potencia", "resistencia", "bfr"],
+
+    // tipo: carga = se calcula con %1RM | isometrico, hsr, bfr, fijo = protocolos propios
+    objetivos: {
+      fuerza: {
+        nombre: "Fuerza máxima", tipo: "carga", rm: [1, 6], pctMin: 80, pctMax: 100,
+        series: "2 - 3 por ejercicio (ACSM 2026)",
+        repeticiones: "1 - 6 RM (ACSM 2009)",
+        tempo: "Moderado: 1 - 2 s concéntrico y 1 - 2 s excéntrico (ACSM 2009)",
+        descanso: "3 - 5 minutos (ACSM 2009)",
+        frecuenciaPorNivel: true,
+        progresion: "Aumentar la carga 2 - 10 % cuando se logren 1 - 2 repeticiones por encima de lo planificado (ACSM 2009)",
+        notaFuente: "ACSM 2026 indica cargas ≥ 80 % del 1RM; ACSM 2009 indica 1 - 6 RM (≈ 86 - 100 %).",
+        ref: ["acsm_2009", "acsm_2026"], estado: "verificada"
+      },
+      hipertrofia: {
+        nombre: "Hipertrofia", tipo: "carga", rm: [6, 12],
+        series: "Volumen ≥ 10 series semanales por grupo muscular (ACSM 2026); varias series por ejercicio (ACSM 2009)",
+        repeticiones: "6 - 12 RM (ACSM 2009)",
+        tempo: "Moderado: 1 - 2 s concéntrico y 1 - 2 s excéntrico (ACSM 2009)",
+        descanso: "1 - 2 minutos (ACSM 2009)",
+        frecuenciaPorNivel: true,
+        progresion: "Aumentar la carga 2 - 10 % cuando se logren 1 - 2 repeticiones por encima de lo planificado (ACSM 2009)",
+        notaFuente: "El porcentaje del 1RM se obtiene de la equivalencia de Brzycki para 6 y 12 RM. ACSM 2026 señala que entrenar hasta el fallo muscular no mejora de forma consistente los resultados en adultos sanos.",
+        ref: ["acsm_2009", "acsm_2026"], estado: "verificada"
+      },
+      potencia: {
+        nombre: "Potencia", tipo: "carga", pctMin: 30, pctMax: 70,
+        series: "3 - 5 por ejercicio (ACSM 2009)",
+        repeticiones: "Pocas repeticiones por serie, de modo que repeticiones × series < 24 (ACSM 2026)",
+        tempo: "Fase concéntrica lo más rápida posible (ACSM 2009 y 2026)",
+        descanso: "3 - 5 minutos (ACSM 2009)",
+        frecuenciaPorNivel: true,
+        progresion: "Priorizar la velocidad de ejecución; subir la carga solo si se mantiene la velocidad",
+        notaFuente: "ACSM 2026: 30 - 70 % del 1RM. ACSM 2009: 0 - 60 % en tren inferior y 30 - 60 % en tren superior. La regla de progresión por velocidad es criterio general.",
+        ref: ["acsm_2009", "acsm_2026"], estado: "parcial"
+      },
+      resistencia: {
+        nombre: "Resistencia muscular local", tipo: "carga", pctMin: 40, pctMax: 60,
+        series: "No especificadas en la fuente consultada",
+        repeticiones: "Altas (≈ 10 - 15 o más). El texto consultado era parcialmente ilegible",
+        tempo: "Moderado",
+        descanso: "Cortos, de 90 s o menos (texto parcialmente ilegible)",
+        frecuenciaPorNivel: true,
+        progresion: "Aumentar repeticiones y luego carga",
+        notaFuente: "ACSM 2026 declara datos insuficientes para recomendar una carga en resistencia muscular. Los valores de ACSM 2009 se leyeron en una copia con caracteres ilegibles: verifique contra el original.",
+        ref: ["acsm_2009", "acsm_2026"], estado: "parcial"
+      },
+      isometrico: {
+        nombre: "Isométrico analgésico (tendón)", tipo: "isometrico",
+        carga: "70 % de la contracción voluntaria máxima isométrica (CVM). No se calcula con el 1RM",
+        series: "5 contracciones",
+        repeticiones: "45 segundos por contracción",
+        tempo: "Contracción sostenida, sin movimiento articular",
+        descanso: "2 minutos entre contracciones (recuperación completa)",
+        frecuencia: "El estudio evaluó una sola sesión; el alivio duró al menos 45 minutos",
+        progresion: "Ajustar según el dolor. El efecto analgésico se aprovecha antes de otras formas de carga",
+        notaFuente: "Estudio cruzado en 6 atletas con tendinopatía rotuliana. Extrapolar a otros tendones es criterio clínico.",
+        ref: ["rio_2015"], estado: "parcial"
+      },
+      hsr: {
+        nombre: "Carga lenta y pesada (HSR, tendón de Aquiles)", tipo: "hsr",
+        tempo: "3 s excéntrico + 3 s concéntrico (6 s por repetición)",
+        descanso: "2 - 3 minutos entre series; 5 minutos entre ejercicios",
+        frecuencia: "3 sesiones por semana durante 12 semanas",
+        ejercicios: "Elevación de talones con rodilla flexionada (máquina sentado), con rodilla extendida (prensa) y con rodilla extendida de pie sobre un disco con barra en los hombros",
+        notaFuente: "Protocolo del ensayo en tendinopatía aquílea de la porción media. Extrapolar a otros tendones es criterio clínico.",
+        ref: ["beyer_2015"], estado: "parcial"
+      },
+      alfredson: {
+        nombre: "Excéntrico de Alfredson (tendón de Aquiles)", tipo: "fijo",
+        carga: "Peso corporal; progresar con mochila cargada a medida que disminuye el dolor (sin tabla semanal)",
+        series: "3 series por ejercicio, con 2 ejercicios (rodilla extendida y flexionada)",
+        repeticiones: "15 repeticiones por serie",
+        tempo: "≈ 3 segundos por repetición (descenso del talón desde un escalón)",
+        descanso: "2 minutos entre series; 5 minutos entre los dos ejercicios",
+        frecuencia: "2 veces al día, 7 días a la semana, durante 12 semanas",
+        progresion: "Añadir carga con mochila cuando el dolor disminuya",
+        notaFuente: "En el ensayo la adherencia fue del 78 % con este protocolo frente al 92 % con HSR.",
+        ref: ["beyer_2015"], estado: "verificada"
+      },
+      bfr: {
+        nombre: "Restricción del flujo sanguíneo (BFR)", tipo: "bfr", pctMin: 20, pctMax: 40,
+        series: "2 - 4 series (el esquema 30-15-15-15 usa 4)",
+        repeticiones: "30 - 15 - 15 - 15 (75 repeticiones en total) o series hasta el fallo",
+        tempo: "Controlado",
+        descanso: "30 - 60 segundos, manteniendo la restricción",
+        frecuencia: "2 - 3 sesiones por semana durante más de 3 semanas (1 - 2 sesiones al día si el programa dura 1 - 3 semanas)",
+        presion: "40 - 80 % de la presión de oclusión arterial (AOP)",
+        manguito: "5 cm (pequeño), 10 - 12 cm (mediano) o 17 - 18 cm (grande). A mayor ancho, menor presión absoluta",
+        progresion: "Aumentar la presión o la carga de forma gradual, según tolerancia",
+        notaFuente: "Útil cuando la carga alta no es aconsejable (p. ej. posoperatorio). El documento menciona como factores de riesgo de tromboembolismo la cirugía ortopédica mayor, el cáncer, la obesidad y el embarazo, sin presentarlos como una lista de contraindicaciones.",
+        ref: ["patterson_2019"], estado: "verificada"
+      }
+    },
+
+    // Progresión del protocolo HSR (Beyer 2015): semanas, series y repeticiones máximas (RM)
+    hsrSemanas: [
+      { desde: 1, hasta: 1,  series: 3, rm: 15 },
+      { desde: 2, hasta: 3,  series: 3, rm: 12 },
+      { desde: 4, hasta: 5,  series: 4, rm: 10 },
+      { desde: 6, hasta: 8,  series: 4, rm: 8 },
+      { desde: 9, hasta: 12, series: 4, rm: 6 }
+    ],
+    reglaDolor: "Durante el ejercicio se aceptó un dolor de 40 - 50 mm en la escala visual análoga de 100 mm, siempre que disminuya antes de la sesión siguiente. Si no remite, ajustar la carga o las actividades (Beyer 2015, tendinopatía aquílea).",
+
+    // Tejido de cada diagnóstico → grupo de progresión
+    tejidoAGrupo: {
+      tendon: "tendon", fascia: "tendon", bursa: "tendon",
+      musculo: "musculo",
+      ligamento: "ligamento", menisco: "ligamento", luxacion: "ligamento",
+      articulacion: "articulacion", disco: "articulacion", sistemico: "articulacion",
+      hueso: "hueso", postquirurgico: "postquirurgico", nervio: "nervio", snc: "snc"
+    },
+
+    /*
+      Matriz de progresión según tejido y fase evolutiva.
+      Cada cadena de 8 letras sigue el orden de "ordenObjetivos":
+      isometrico, hsr, alfredson, fuerza, hipertrofia, potencia, resistencia, bfr
+      I = indicado | P = con precaución | N = no indicado
+      Es un criterio general de progresión por tejido y antigüedad; NO proviene de una guía específica.
+    */
+    matriz: {
+      tendon:         { aguda: "INNNNNNP", subaguda: "IPPNPNPI", cronica: "IIIPIPII" },
+      musculo:        { aguda: "PNNNNNNN", subaguda: "IPNPPNII", cronica: "IINIIPII" },
+      ligamento:      { aguda: "PNNNNNNN", subaguda: "IPNPPNII", cronica: "IINIIPII" },
+      articulacion:   { aguda: "PNNNNNPN", subaguda: "IPNPPNII", cronica: "IINIIPII" },
+      hueso:          { aguda: "NNNNNNNP", subaguda: "PNNNNNNP", cronica: "PPNPPNPP" },
+      postquirurgico: { aguda: "PNNNNNNP", subaguda: "PNNNNNPI", cronica: "IPNPPNII" },
+      nervio:         { aguda: "PNNNNNNN", subaguda: "INNPNNPN", cronica: "IPNPPNIN" },
+      snc:            { aguda: "PNNNNNPN", subaguda: "PNNPPPPN", cronica: "PNNPPPPN" },
+      otros:          { aguda: "NNNNNNNN", subaguda: "NNNNNNNN", cronica: "NNNNNNNN" }
+    },
+
+    mensajes: {
+      tendon: {
+        aguda: "Tendón reactivo o irritable: priorizar isométricos guiados por el dolor. Evitar cargas pesadas y progresiones rápidas.",
+        subaguda: "Introducir carga de forma gradual, empezando por las repeticiones más altas (p. ej. 15 RM en HSR) y respetando la regla de dolor.",
+        cronica: "Es la fase en la que se estudiaron los protocolos de carga lenta y pesada y excéntrico. Progresar la carga según el dolor y la respuesta."
+      },
+      musculo: {
+        aguda: "Evitar la carga sobre el músculo lesionado. Solo contracciones submáximas sin dolor, si el cuadro lo permite.",
+        subaguda: "Cargas bajas a moderadas sin dolor; la restricción de flujo es una opción cuando la carga alta aún no es aconsejable.",
+        cronica: "Progresar a cargas altas según tolerancia; reservar la potencia para la reincorporación deportiva."
+      },
+      ligamento: {
+        aguda: "Proteger la estructura. Contracciones submáximas sin estresar el ligamento; seguir la indicación médica sobre inmovilización.",
+        subaguda: "Cargas bajas a moderadas y controladas, sin provocar inestabilidad ni dolor.",
+        cronica: "Progresar la carga y la complejidad; la potencia se reserva para el retorno deportivo con estabilidad confirmada."
+      },
+      articulacion: {
+        aguda: "Brote o dolor agudo: movilidad y contracciones submáximas sin dolor; evitar carga alta.",
+        subaguda: "Carga progresiva dentro del rango sin dolor; considerar la restricción de flujo si hay intolerancia a la carga alta.",
+        cronica: "El entrenamiento de fuerza progresivo es adecuado; ajustar a la tolerancia articular y a los brotes."
+      },
+      hueso: {
+        aguda: "No cargar el foco de fractura. Trabajar solo segmentos no afectados y seguir la indicación médica. Considerar el riesgo de tromboembolismo antes de usar restricción de flujo.",
+        subaguda: "Contracciones submáximas de la musculatura adyacente solo si el médico lo autoriza. Sin cargas sobre el foco.",
+        cronica: "Más de 28 días no equivale a consolidación. Confirmar la consolidación radiológica y la autorización médica antes de progresar la carga."
+      },
+      postquirurgico: {
+        aguda: "Seguir estrictamente el protocolo del cirujano. No se prescriben cargas por porcentaje de 1RM.",
+        subaguda: "La restricción de flujo se ha descrito como alternativa cuando la carga alta no es aconsejable en el posoperatorio. Confirmar con el equipo quirúrgico.",
+        cronica: "Progresar según el protocolo del cirujano y la evolución clínica."
+      },
+      nervio: {
+        aguda: "Evitar el estiramiento y la compresión del nervio; solo contracciones submáximas sin síntomas neurológicos.",
+        subaguda: "Cargas bajas, vigilando parestesias, debilidad o dolor irradiado.",
+        cronica: "Progresar con cautela, monitorizando los síntomas neurológicos."
+      },
+      snc: {
+        aguda: "Paciente neurológico en fase temprana: la prescripción de carga la define el equipo de rehabilitación neurológica.",
+        subaguda: "Evaluar espasticidad, fatiga y control motor antes de prescribir carga. Las fases se miden con umbrales propios del sistema nervioso central.",
+        cronica: "Evaluar espasticidad, fatiga y control motor antes de prescribir carga; individualizar según la capacidad funcional."
+      },
+      otros: {
+        aguda: "Esta herramienta no prescribe carga por porcentaje de 1RM para este diagnóstico.",
+        subaguda: "Esta herramienta no prescribe carga por porcentaje de 1RM para este diagnóstico.",
+        cronica: "Esta herramienta no prescribe carga por porcentaje de 1RM para este diagnóstico (p. ej. el entrenamiento del suelo pélvico requiere programas específicos no incluidos)."
+      }
+    },
+
+    notaGeneral: "Los estados Indicado, Precaución y No indicado son un criterio general de progresión según el tejido y la antigüedad; no provienen de una guía específica. En un segmento lesionado no se recomienda evaluar el 1RM de forma directa: use una estimación submáxima o el segmento contralateral. La prescripción final es responsabilidad del fisioterapeuta."
   },
 
   /*
@@ -457,6 +932,16 @@ window.DATOS_FISIO = {
       nivel: "info",
       titulo: "Técnica de aplicación",
       mensaje: "El cabezal de ultrasonido actúa como electrodo activo: mantenerlo siempre en movimiento, con gel conductor, y colocar bien el electrodo de retorno. Evitar la aplicación sobre metal, marcapasos, zonas sin sensibilidad o embarazo."
+    },
+
+    // Láser
+    {
+      agentes: ["laser"],
+      tejidos: "*",
+      fases: "*",
+      nivel: "precaucion",
+      titulo: "Seguridad con láser",
+      mensaje: "Use protección ocular para el paciente y el operador, no irradie directamente los ojos ni zonas con tumor conocido. Criterio general de seguridad no extraído de la tabla WALT; consulte el manual del equipo."
     },
 
     // Luxaciones
