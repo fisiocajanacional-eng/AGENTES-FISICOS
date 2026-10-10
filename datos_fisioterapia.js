@@ -28,9 +28,15 @@
 
 window.DATOS_FISIO = {
 
-  version: "2.0",
-  fecha: "2026-10-09",
+  version: "2.1",
+  fecha: "2026-10-10",
   clasificacion: "CIE-10",
+
+  // Abreviaturas que el buscador reemplaza antes de comparar (clave en minúsculas, sin tildes)
+  sinonimosBusqueda: {
+    sx: "sindrome", sd: "sindrome", sdr: "sindrome",
+    esg: "esguince", itb: "iliotibial", tfcc: "triangular"
+  },
 
   fases: {
     aguda:    { etiqueta: "Aguda",    detalle: "hasta 7 días" },
@@ -118,7 +124,7 @@ window.DATOS_FISIO = {
     { c: "M22.2", n: "Trastorno femororrotuliano", g: "Rodilla", t: "articulacion" },
     { c: "M94.2", n: "Condromalacia rotuliana", g: "Rodilla", t: "articulacion" },
     { c: "M76.5", n: "Tendinitis rotuliana", g: "Rodilla", t: "tendon" },
-    { c: "M76.3", n: "Síndrome de la banda iliotibial", g: "Rodilla", t: "tendon" },
+    { c: "M76.3", n: "Síndrome de la banda iliotibial", g: "Rodilla", t: "tendon", s: "sx sd cintilla bandeleta iliotibial itb corredor friccion" },
     { c: "M23.2", n: "Trastorno de menisco por desgarro antiguo", g: "Rodilla", t: "menisco" },
     { c: "S83.2", n: "Desgarro meniscal reciente", g: "Rodilla", t: "menisco" },
     { c: "S83.5", n: "Esguince de ligamento cruzado de la rodilla", g: "Rodilla", t: "ligamento" },
@@ -172,6 +178,37 @@ window.DATOS_FISIO = {
     { c: "Z47.8", n: "Cuidados posteriores a cirugía ortopédica", g: "Posquirúrgico", t: "postquirurgico" },
     { c: "Z96.6", n: "Presencia de implante ortopédico articular (prótesis)", g: "Posquirúrgico", t: "postquirurgico" },
     { c: "Z89.9", n: "Ausencia adquirida de miembro (amputación), sin otra especificación", g: "Posquirúrgico", t: "postquirurgico", s: "amputado muñón protesis" },
+
+    // Ampliación v2.1: esguinces, ligamentos, tendones y fracturas frecuentes
+    { c: "S63.5", n: "Esguince de muñeca", g: "Muñeca y mano", t: "ligamento", s: "sx torcedura muneca" },
+    { id: "S63.5-TFCC", c: "S63.5", n: "Lesión del complejo del fibrocartílago triangular (ligamento triangular, TFCC)", g: "Muñeca y mano", t: "ligamento", s: "tfcc ligamento triangular fibrocartilago triangular muneca cubital" },
+    { c: "S63.3", n: "Ruptura traumática de ligamento de la muñeca (p. ej. escafolunar)", g: "Muñeca y mano", t: "ligamento", s: "escafolunar inestabilidad carpiana muneca" },
+    { c: "S62.0", n: "Fractura del hueso escafoides de la mano", g: "Traumatismos y fracturas", t: "hueso", s: "navicular muneca" },
+    { c: "S53.4", n: "Esguince de codo", g: "Codo", t: "ligamento", s: "torcedura codo" },
+    { c: "S43.4", n: "Esguince de la articulación del hombro", g: "Hombro", t: "ligamento", s: "torcedura hombro" },
+    { c: "S43.5", n: "Esguince de la articulación acromioclavicular", g: "Hombro", t: "ligamento", s: "ac torcedura hombro" },
+    { c: "S42.0", n: "Fractura de la clavícula", g: "Traumatismos y fracturas", t: "hueso" },
+    { c: "S42.2", n: "Fractura de la extremidad superior del húmero", g: "Traumatismos y fracturas", t: "hueso", s: "humero proximal hombro" },
+    { c: "G56.3", n: "Lesión del nervio radial", g: "Nervios periféricos", t: "nervio", s: "mano caida" },
+    { c: "S73.1", n: "Esguince de cadera", g: "Cadera", t: "ligamento", s: "torcedura cadera" },
+    { c: "S76.2", n: "Lesión del músculo y tendón aductor del muslo (aductores)", g: "Músculo y tejidos blandos", t: "musculo", s: "ingle pubalgia aductores desgarro" },
+    { c: "S76.1", n: "Lesión del músculo y tendón del cuádriceps", g: "Músculo y tejidos blandos", t: "musculo", s: "cuadriceps desgarro muslo" },
+    { c: "G57.0", n: "Lesión del nervio ciático (incluye síndrome del piriforme)", g: "Nervios periféricos", t: "nervio", s: "piriforme piramidal sx" },
+    { c: "S72.1", n: "Fractura trocantérica", g: "Traumatismos y fracturas", t: "hueso", s: "cadera fractura" },
+    { c: "S72.3", n: "Fractura de la diáfisis del fémur", g: "Traumatismos y fracturas", t: "hueso" },
+    { c: "S82.0", n: "Fractura de la rótula", g: "Traumatismos y fracturas", t: "hueso", s: "patela" },
+    { c: "M71.2", n: "Quiste sinovial del hueco poplíteo (quiste de Baker)", g: "Rodilla", t: "bursa", s: "baker popliteo" },
+    { c: "M92.5", n: "Osteocondrosis juvenil de la tibia y del peroné (enfermedad de Osgood-Schlatter)", g: "Rodilla", t: "tendon", x: ["pediatrico"], s: "osgood schlatter tuberosidad tibial" },
+    { c: "M76.7", n: "Tendinitis de los peroneos", g: "Pie y tobillo", t: "tendon", s: "peroneos peroneo tobillo" },
+    { c: "M76.8", n: "Tendinitis del tibial posterior (otras entesopatías del miembro inferior)", g: "Pie y tobillo", t: "tendon", s: "tibial posterior tibial anterior" },
+    { c: "S93.6", n: "Esguince de pie", g: "Pie y tobillo", t: "ligamento", s: "torcedura pie lisfranc" },
+    { c: "G57.5", n: "Síndrome del túnel del tarso", g: "Nervios periféricos", t: "nervio", s: "sx tarso tibial posterior nervio" },
+    { c: "M20.4", n: "Dedo del pie en martillo (adquirido)", g: "Pie y tobillo", t: "articulacion", s: "dedos garra" },
+    { c: "S82.6", n: "Fractura del maléolo externo (peroné distal)", g: "Traumatismos y fracturas", t: "hueso", s: "tobillo peroné fractura" },
+    { c: "S92.0", n: "Fractura del calcáneo", g: "Traumatismos y fracturas", t: "hueso", s: "talon" },
+    { c: "M19.0", n: "Artrosis primaria de otras articulaciones (hombro, codo, muñeca, tobillo)", g: "Artropatías y sistémicas", t: "articulacion", s: "artrosis hombro codo muneca tobillo omartrosis" },
+    { c: "I69.1", n: "Secuelas de hemorragia intracerebral", g: "Neurológico (sistema nervioso central)", t: "snc", s: "acv hemorragico derrame hemiparesia" },
+    { c: "G71.0", n: "Distrofia muscular", g: "Neurológico (sistema nervioso central)", t: "snc", s: "duchenne becker miopatia" },
 
     // Columna vertebral (ampliación)
     { c: "M54.6", n: "Dolor en la columna dorsal (dorsalgia)", g: "Columna vertebral", t: "musculo" },
@@ -490,6 +527,24 @@ window.DATOS_FISIO = {
     estado: verificada = se consultó el documento | pendiente = referencia general sin fuente primaria verificada
   */
   fuentes: {
+    watson_tens: {
+      cita: "Watson T. TENS. Electrotherapy Association (electrotherapy.org). © Tim Watson 1995-2025.",
+      url: "https://www.electrotherapy.org/tens",
+      detalle: "Principios de colocación: a ambos lados de la lesión o zona dolorosa, nivel de la raíz, nervio periférico proximal, punto motor, puntos gatillo o de acupuntura, dermatoma, miotoma o esclerotoma, y uso de dos canales. La página no cubre tamaño ni separación de electrodos. El sitio indica que algunas páginas están en reconstrucción.",
+      estado: "verificada"
+    },
+    watson_if: {
+      cita: "Watson T. Interferential. Electrotherapy Association (electrotherapy.org).",
+      url: "https://www.electrotherapy.org/interferential",
+      detalle: "Disposición de cuatro polos o bipolar sin diferencia fisiológica conocida, tamaño de electrodos y precauciones de colocación. La lista completa de contraindicaciones del sitio solo estaba disponible como imágenes y no se pudo leer.",
+      estado: "verificada"
+    },
+    watson_nmes: {
+      cita: "Watson T. Muscle Stimulation (NMES). Electrotherapy Association (electrotherapy.org).",
+      url: "https://www.electrotherapy.org/muscle-stimulation-nmes",
+      detalle: "Un electrodo en cada extremo del vientre muscular, variabilidad de los puntos motores, tamaño de electrodos y polaridad. No trata la separación entre electrodos.",
+      estado: "verificada"
+    },
     general: {
       cita: "Valores de referencia general de la práctica fisioterapéutica.",
       detalle: "No se verificó una fuente primaria en esta versión. Confirme con el manual del equipo y la literatura antes de aplicarlos en clínica.",
@@ -563,6 +618,91 @@ window.DATOS_FISIO = {
   },
 
   /*
+    POSICIÓN DE ELECTRODOS (electroterapia y NMES)
+    Las estrategias y notas provienen de las fuentes citadas en "ref".
+    La asignación de estrategias por tejido es una aplicación de esos principios, no una tabla de la fuente.
+    Para agregar o cambiar una asignación, edite "porTejido" con claves de "estrategias".
+  */
+  electrodos: {
+    estrategias: {
+      flanquear: {
+        nombre: "A ambos lados de la zona dolorosa",
+        texto: "Es el enfoque más habitual: un electrodo a cada lado de la lesión o del área dolorosa, de modo que la corriente atraviese la zona.",
+        ref: ["watson_tens"]
+      },
+      nervio: {
+        nombre: "Sobre el nervio periférico, proximal al dolor",
+        texto: "Estimular el nervio periférico que inerva la zona, en un punto proximal al área dolorosa. Los electrodos se colocan sobre el trayecto del nervio.",
+        ref: ["watson_tens", "vance_2022"]
+      },
+      raiz: {
+        nombre: "Nivel de la raíz nerviosa o dermatoma",
+        texto: "Dirigir el estímulo al nivel medular que corresponde al dolor: raíz nerviosa, dermatoma, miotoma o esclerotoma.",
+        ref: ["watson_tens"]
+      },
+      dos_canales: {
+        nombre: "Dos canales (cuatro electrodos)",
+        texto: "En dolor vago, difuso o extenso se pueden usar ambos canales a la vez. En dolor local con componente referido, un canal para cada componente. Con cuatro polos las corrientes se cruzan en el tejido.",
+        ref: ["watson_tens", "watson_if"]
+      },
+      puntos: {
+        nombre: "Puntos gatillo o puntos de acupuntura",
+        texto: "Colocar los electrodos sobre puntos gatillo o de acupuntura relacionados con el mismo nivel segmentario.",
+        ref: ["watson_tens"]
+      },
+      vientre: {
+        nombre: "Extremos del vientre muscular (NMES)",
+        texto: "Un electrodo en cada extremo del vientre del músculo o del grupo muscular que se desea activar.",
+        ref: ["watson_nmes"]
+      },
+      punto_motor: {
+        nombre: "Sobre el punto motor (NMES)",
+        texto: "Algunos profesionales prefieren colocar un electrodo sobre el punto motor. Los puntos motores no están en posición fija y varían bastante entre personas: los mapas solo muestran posiciones promedio.",
+        ref: ["watson_nmes"]
+      }
+    },
+
+    // Primera estrategia = sugerida (con su esquema); las demás son alternativas.
+    porTejido: {
+      tens: {
+        tendon:       ["flanquear", "nervio", "puntos"],
+        fascia:       ["flanquear", "nervio", "puntos"],
+        bursa:        ["flanquear", "nervio", "puntos"],
+        ligamento:    ["flanquear", "nervio", "puntos"],
+        menisco:      ["flanquear", "nervio", "puntos"],
+        luxacion:     ["flanquear", "nervio", "puntos"],
+        articulacion: ["flanquear", "nervio", "puntos"],
+        musculo:      ["flanquear", "puntos", "nervio"],
+        hueso:        ["flanquear", "nervio"],
+        postquirurgico: ["flanquear", "nervio"],
+        nervio:       ["nervio", "raiz", "flanquear"],
+        disco:        ["raiz", "dos_canales", "flanquear"],
+        sistemico:    ["dos_canales", "raiz", "puntos"]
+      },
+      nmes: { "*": ["vientre", "punto_motor"] }
+    },
+
+    // Para estos tejidos no se incluye una colocación específica
+    sinColocacion: {
+      snc: "En patología neurológica central la colocación depende del objetivo (por ejemplo, activar un grupo muscular parético o reducir la espasticidad) y la define el equipo de neurorrehabilitación. No se incluye una colocación específica en esta versión.",
+      suelo_pelvico: "La colocación en el suelo pélvico (perineal o endocavitaria) requiere indicación y formación específicas. No se incluye en esta versión.",
+      piel: "Sobre piel lesionada no se colocan electrodos. Esta versión no incluye una colocación específica para este diagnóstico.",
+      vascular: "No se incluye una colocación específica para este diagnóstico en esta versión."
+    },
+
+    // Notas generales (cada una con su fuente)
+    notas: [
+      { texto: "La estimulación de baja frecuencia (tipo acupuntura) puede aplicarse también en el lado contralateral del cuerpo.", ref: ["watson_tens"] },
+      { texto: "Prefiera electrodos autoadhesivos prellenados con gel: la reacción cutánea de tipo alérgico es la queja más común (≈ 2 - 3 % de los pacientes) y casi siempre se debe a los electrodos, al gel o a la cinta.", ref: ["watson_tens"] },
+      { texto: "Los electrodos grandes son más cómodos y efectivos en NMES. En el cuádriceps se describieron electrodos de ≈ 20 cm² como los más cómodos.", ref: ["watson_nmes", "glaviano_2016"] },
+      { texto: "Los electrodos pequeños y muy cercanos aumentan el riesgo de irritación superficial y de quemadura.", ref: ["watson_if"] },
+      { texto: "Con una onda bifásica la polaridad (rojo o negro) no cambia de forma relevante el resultado.", ref: ["watson_nmes"] },
+      { texto: "No colocar electrodos sobre la pared torácica anterior, los ojos, la cara anterior del cuello, los senos carotídeos ni piel lesionada, ni sobre el tronco o la pelvis durante el embarazo. Si hay sensibilidad alterada, elegir otro sitio.", ref: ["watson_if"] },
+      { texto: "Las fuentes consultadas no indican una distancia mínima entre electrodos ni un tamaño para TENS.", ref: [] }
+    ]
+  },
+
+  /*
     DOSIMETRÍA DE PRECISIÓN (cálculos opcionales)
   */
   dosimetria: {
@@ -602,7 +742,7 @@ window.DATOS_FISIO = {
         { id: "fascitis_plantar",  nombre: "Fascitis plantar",              grupo: "Tendinopatías", puntos: [2, 3], joules: 8,  minPunto: 4, cie: ["M72.2", "M77.3"] },
 
         { id: "dedo",              nombre: "Dedo (IFP o MCF)",              grupo: "Articulaciones", puntos: [1, 2], joules: 4,  cie: ["M65.3", "S63.6"] },
-        { id: "muneca",            nombre: "Muñeca",                        grupo: "Articulaciones", puntos: [2, 4], joules: 8,  cie: ["M65.4"] },
+        { id: "muneca",            nombre: "Muñeca",                        grupo: "Articulaciones", puntos: [2, 4], joules: 8,  cie: ["M65.4", "S63.5", "S63.3"] },
         { id: "humerorradial",     nombre: "Articulación humerorradial",    grupo: "Articulaciones", puntos: [1, 2], joules: 4,  cie: [] },
         { id: "codo",              nombre: "Codo",                          grupo: "Articulaciones", puntos: [2, 4], joules: 8,  cie: ["M70.2"], nota: "El documento imprime '2.4' como número de puntos; se interpreta como 2 a 4." },
         { id: "glenohumeral",      nombre: "Articulación glenohumeral",     grupo: "Articulaciones", puntos: [2, 4], joules: 8,  minPunto: 4, cie: ["M75.0", "M75.5"] },
