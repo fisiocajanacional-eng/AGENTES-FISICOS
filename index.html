@@ -180,6 +180,8 @@
 
                 <div id="contenedorAlertas" class="px-6 pb-6 space-y-3"></div>
 
+                <div id="contenedorElectrodos" class="px-6 pb-6"></div>
+
                 <div id="contenedorPrecision" class="px-6 pb-6 no-imprimir"></div>
 
                 <div id="contenedorFuentes" class="px-6 pb-6 border-t border-slate-100 pt-5"></div>
@@ -232,7 +234,7 @@
             resEtiqueta: $('resEtiqueta'), resTitulo: $('resTitulo'), resSubtitulo: $('resSubtitulo'), resBadge: $('resBadge'),
             banner: $('bannerEjercicio'),
             parametros: $('contenedorParametros'), alertas: $('contenedorAlertas'),
-            precision: $('contenedorPrecision'), fuentes: $('contenedorFuentes'),
+            electrodos: $('contenedorElectrodos'), precision: $('contenedorPrecision'), fuentes: $('contenedorFuentes'),
             rmModo: $('rmModo'), rmDirecto: $('rmDirecto'), rmCarga: $('rmCarga'), rmReps: $('rmReps'), rmFormula: $('rmFormula'),
             rmDirectoCaja: $('rmDirectoCaja'), rmEstimarCaja: $('rmEstimarCaja'), bloque1RM: $('bloque1RM'),
             nivel: $('nivel'), hsrSemana: $('hsrSemana'), bloqueSemana: $('bloqueSemana')
@@ -271,7 +273,8 @@
         const normalizar = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
         const coincide = (lista, valor) => lista === "*" || lista.includes(valor);
         const coincideTags = (lista, tags) => lista === "*" || tags.some(t => lista.includes(t));
-        const buscarPatologia = codigo => D.patologias.find(p => p.c === codigo);
+        const idDe = p => p.id || p.c;
+        const buscarPatologia = codigo => D.patologias.find(p => idDe(p) === codigo);
         const buscarAgente = id => D.agentes.find(a => a.id === id);
         const obtenerTags = p => [...(p.x || []), p.t];
         const fmt = (n, d = 1) => Number(n).toFixed(d).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
@@ -336,10 +339,14 @@
         // LISTA DE DIAGNÓSTICOS
         // ------------------------------------------------------------------
         function renderLista() {
-            const filtro = normalizar(el.buscador.value.trim());
-            const coincidencias = D.patologias.filter(p =>
-                !filtro || normalizar(`${p.c} ${p.n} ${p.g} ${p.s || ''}`).includes(filtro)
-            );
+            const sinon = D.sinonimosBusqueda || {};
+            const tokens = normalizar(el.buscador.value.trim()).split(/\s+/).filter(Boolean)
+                .map(t => sinon[t] ? normalizar(sinon[t]) : t);
+            const coincidencias = D.patologias.filter(p => {
+                if (!tokens.length) return true;
+                const texto = normalizar(`${p.c} ${p.n} ${p.g} ${p.s || ''}`);
+                return tokens.every(t => texto.includes(t));
+            });
 
             if (coincidencias.length === 0) {
                 el.lista.innerHTML = `<div class="p-4 text-sm text-slate-400 text-center">Sin resultados para esa búsqueda.</div>`;
@@ -352,8 +359,8 @@
                 if (!items.length) return;
                 html += `<div class="px-3 py-1.5 bg-slate-50 text-[11px] font-semibold uppercase tracking-widest text-slate-400 sticky top-0">${grupo}</div>`;
                 items.forEach(p => {
-                    const activo = p.c === estado.codigo;
-                    html += `<button type="button" data-codigo="${p.c}"
+                    const activo = idDe(p) === estado.codigo;
+                    html += `<button type="button" data-codigo="${idDe(p)}"
                                 class="w-full text-left px-3 py-2 flex items-baseline gap-3 text-sm transition
                                        ${activo ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-700'}">
                                 <span class="shrink-0 w-12 text-xs font-mono ${activo ? 'text-amber-300' : 'text-slate-400'}">${p.c}</span>
@@ -428,6 +435,76 @@
             });
             html += `</ul>`;
             el.fuentes.innerHTML = html;
+        }
+
+        // ------------------------------------------------------------------
+        // POSICIÓN DE ELECTRODOS
+        // ------------------------------------------------------------------
+        const svgBase = (cuerpo) => `<svg viewBox="0 0 220 110" class="w-full h-auto" role="img" aria-hidden="true">${cuerpo}</svg>`;
+        const el_ = (x, y, w = 26, h = 14, c = "#0f172a") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${c}"/>`;
+        const esquemas = {
+            flanquear: () => svgBase(`<ellipse cx="110" cy="55" rx="60" ry="30" fill="#f1f5f9" stroke="#cbd5e1"/>
+                <circle cx="110" cy="55" r="9" fill="#fda4af"/>${el_(52, 48)}${el_(142, 48)}
+                <path d="M80 55 H98 M122 55 H140" stroke="#94a3b8" stroke-dasharray="3 3"/>
+                <text x="110" y="95" text-anchor="middle" font-size="9" fill="#64748b">zona dolorosa entre los electrodos</text>`),
+            nervio: () => svgBase(`<rect x="20" y="40" width="180" height="30" rx="15" fill="#f1f5f9" stroke="#cbd5e1"/>
+                <path d="M30 55 H190" stroke="#f59e0b" stroke-width="3"/>${el_(52, 48)}${el_(96, 48)}
+                <circle cx="170" cy="55" r="9" fill="#fda4af"/>
+                <text x="110" y="95" text-anchor="middle" font-size="9" fill="#64748b">sobre el nervio, proximal a la zona dolorosa</text>`),
+            raiz: () => svgBase(`<rect x="104" y="8" width="12" height="78" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+                ${[22,40,58,76].map(y => `<line x1="104" y1="${y}" x2="116" y2="${y}" stroke="#94a3b8"/>`).join('')}
+                ${el_(66, 43, 30, 14)}${el_(124, 43, 30, 14)}
+                <text x="110" y="102" text-anchor="middle" font-size="9" fill="#64748b">a ambos lados de la columna, al nivel segmentario</text>`),
+            dos_canales: () => svgBase(`<rect x="50" y="12" width="120" height="70" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+                ${el_(40, 6, 22, 12, "#0f172a")}${el_(158, 76, 22, 12, "#0f172a")}${el_(158, 6, 22, 12, "#2563eb")}${el_(40, 76, 22, 12, "#2563eb")}
+                <path d="M62 12 L158 82" stroke="#0f172a" stroke-dasharray="3 3"/><path d="M158 12 L62 82" stroke="#2563eb" stroke-dasharray="3 3"/>
+                <text x="110" y="102" text-anchor="middle" font-size="9" fill="#64748b">dos canales (colores) cruzados</text>`),
+            vientre: () => svgBase(`<path d="M30 55 C70 15 150 15 190 55 C150 95 70 95 30 55Z" fill="#fecaca" stroke="#f87171"/>
+                ${el_(22, 48, 24, 14)}${el_(174, 48, 24, 14)}
+                <text x="110" y="104" text-anchor="middle" font-size="9" fill="#64748b">un electrodo en cada extremo del vientre muscular</text>`)
+        };
+
+        function renderElectrodos(patologia, agenteId) {
+            el.electrodos.innerHTML = "";
+            const E2 = D.electrodos;
+            if (!E2 || !["electroterapia", "nmes"].includes(agenteId)) return [];
+            let html = `<div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-500">Posición de electrodos</h3>`;
+            const aviso = E2.sinColocacion?.[patologia.t];
+            const lista = agenteId === "nmes" ? E2.porTejido.nmes["*"] : E2.porTejido.tens[patologia.t];
+            const refs = new Set();
+            if (aviso && agenteId === "electroterapia") {
+                html += `<p class="mt-3 text-sm text-slate-600 leading-relaxed">${aviso}</p></div>`;
+                el.electrodos.innerHTML = html;
+                return [];
+            }
+            if (!lista) { return []; }
+            lista.forEach(id => (E2.estrategias[id]?.ref || []).forEach(r => refs.add(r)));
+            const sug = E2.estrategias[lista[0]];
+            html += `<div class="mt-3 grid sm:grid-cols-5 gap-4 items-center">
+                <div class="sm:col-span-2 bg-slate-50 rounded-lg p-3">${esquemas[lista[0]] ? esquemas[lista[0]]() : ""}
+                    <p class="text-[10px] text-center text-slate-400 mt-1">Esquema ilustrativo, no anatómico</p></div>
+                <div class="sm:col-span-3">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Sugerida</p>
+                    <p class="text-sm font-semibold text-slate-900">${sug.nombre}</p>
+                    <p class="mt-1 text-sm text-slate-600 leading-relaxed">${sug.texto}</p>
+                </div></div>`;
+            if (lista.length > 1) {
+                html += `<p class="mt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Alternativas</p><ul class="mt-1 space-y-2">`;
+                lista.slice(1).forEach(id => {
+                    const a = E2.estrategias[id];
+                    html += `<li class="text-sm text-slate-600"><span class="font-medium text-slate-800">${a.nombre}.</span> ${a.texto}</li>`;
+                });
+                html += `</ul>`;
+            }
+            html += `<p class="mt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Consideraciones</p><ul class="mt-1 space-y-1.5 list-disc pl-5">`;
+            E2.notas.forEach(n => {
+                (n.ref || []).forEach(r => refs.add(r));
+                html += `<li class="text-xs text-slate-600 leading-relaxed">${n.texto}</li>`;
+            });
+            html += `</ul><p class="mt-4 text-[11px] text-slate-400 leading-relaxed">Los principios de colocación provienen de las fuentes citadas (Watson, electrotherapy.org). La asignación a cada tejido es una aplicación de esos principios y no una tabla de la fuente; el criterio clínico prevalece.</p></div>`;
+            el.electrodos.innerHTML = html;
+            return [...refs];
         }
 
         // ------------------------------------------------------------------
@@ -506,7 +583,8 @@
             });
             renderAlertas(alertas);
 
-            renderFuentes(receta?.ref, estadoReceta, receta?.notaFuente);
+            const refsElec = renderElectrodos(patologia, agente.id);
+            renderFuentes([...(receta?.ref || []), ...refsElec], estadoReceta, receta?.notaFuente);
             renderPrecision(patologia, fase, agente.id);
         }
 
@@ -838,6 +916,7 @@
             const patologia = buscarPatologia(estado.codigo);
             if (!patologia) return;
             const fase = calcularFase(patologia);
+            el.electrodos.innerHTML = "";
             renderFase(fase, patologia);
             el.bloqueSemana.classList.toggle('hidden', estado.objetivo !== 'hsr');
             const objetivo = E.objetivos[estado.objetivo];
