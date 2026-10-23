@@ -28,8 +28,8 @@
 
 window.DATOS_FISIO = {
 
-  version: "2.1",
-  fecha: "2026-10-10",
+  version: "2.2",
+  fecha: "2026-10-23",
   clasificacion: "CIE-10",
 
   // Abreviaturas que el buscador reemplaza antes de comparar (clave en minúsculas, sin tildes)
@@ -418,26 +418,26 @@ window.DATOS_FISIO = {
 
     ultrasonido: {
       aguda: {
-        modalidad: "Pulsado, razón 1:4 o 1:3 (ciclo de trabajo 20 - 25 %)",
+        modalidad: "Pulsado, ciclo de trabajo 20 % (razón 1:4)",
         frecuencia: "3 MHz (lesión superficial) / 1 MHz (profunda; límite aproximado: 2 cm)",
         intensidad: "≈ 0.2 W/cm² en la lesión (dosis no térmica)",
-        tiempo: "1 min × n.º de áreas de cabezal × (suma de la razón de pulso). Ejemplo: 1 área, 1:4 → 5 min",
+        tiempo: "1 min × n.º de áreas de cabezal × (1 ÷ ciclo de trabajo). Ejemplo: 1 área, 20 % → 5 min",
         ref: ["watson_us"], estado: "verificada",
         notaFuente: "Valores de los ejemplos de Watson. La intensidad indicada es la requerida en la lesión; en lesiones profundas la intensidad en superficie debe ser mayor para compensar la atenuación. Profundidad de semivalor: ≈ 2.5 cm a 3 MHz y ≈ 4.0 cm a 1 MHz."
       },
       subaguda: {
-        modalidad: "Pulsado, razón 1:2 o 1:1 (ciclo de trabajo 33 - 50 %)",
+        modalidad: "Pulsado, ciclo de trabajo 50 % (razón 1:1)",
         frecuencia: "3 MHz (superficial) / 1 MHz (profunda)",
         intensidad: "≈ 0.4 W/cm² en la lesión (dosis no térmica)",
-        tiempo: "1 min × n.º de áreas de cabezal × (suma de la razón de pulso). Ejemplo: 2 áreas, 1:2 → 6 min",
+        tiempo: "1 min × n.º de áreas de cabezal × (1 ÷ ciclo de trabajo). Ejemplo: 2 áreas, 50 % → 4 min",
         ref: ["watson_us"], estado: "verificada",
-        notaFuente: "Valores de los ejemplos de Watson (intensidad requerida en la lesión)."
+        notaFuente: "Valores de los ejemplos de Watson (intensidad requerida en la lesión). Watson usa razón 1:2 (≈ 33 %), que no existe en equipos con ciclos de 20, 50 y 100 %: se adaptó al ciclo de 50 %. Si prefiere un criterio más conservador use 20 % (el tiempo sube a 5 min por área)."
       },
       cronica: {
-        modalidad: "Pulsado 1:1 o continuo",
+        modalidad: "Pulsado 50 % (1:1) o continuo 100 %",
         frecuencia: "1 MHz (profunda) / 3 MHz (superficial)",
         intensidad: "≈ 0.5 W/cm² en la lesión; ≥ 0.6 W/cm² en cronicidad marcada con emisión continua",
-        tiempo: "1 min × n.º de áreas de cabezal × (suma de la razón de pulso). Ejemplos: 2 áreas, 1:1 → 4 min; 3 áreas, continuo → 3 min",
+        tiempo: "1 min × n.º de áreas de cabezal × (1 ÷ ciclo de trabajo). Ejemplos: 2 áreas, 50 % → 4 min; 3 áreas, 100 % → 3 min",
         ref: ["watson_us"], estado: "verificada",
         notaFuente: "Valores de los ejemplos de Watson (dosis no térmicas). Los protocolos térmicos de ultrasonido continuo a mayor intensidad no están cubiertos por la fuente consultada."
       }
@@ -445,26 +445,26 @@ window.DATOS_FISIO = {
 
     terapia_combinada: {
       aguda: {
-        modalidad: "US pulsado 1:4 + TENS de alta frecuencia, aplicados simultáneamente",
+        modalidad: "US pulsado 20 % (1:4) + TENS de alta frecuencia, aplicados simultáneamente",
         frecuencia: "US 3 MHz (1 MHz si es profundo) | Corriente ≈ 100 Hz, 200 µs",
         intensidad: "US ≈ 0.2 W/cm² | Corriente fuerte pero cómoda, sin contracción",
-        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × 5. La corriente acompaña ese tiempo",
+        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × 5 (ciclo 20 %). La corriente acompaña ese tiempo",
         ref: ["watson_us", "vance_2022"], estado: "pendiente",
         notaFuente: "No se encontró un protocolo combinado verificado: se componen las dosis individuales de cada agente. Confirme con el manual de su equipo."
       },
       subaguda: {
-        modalidad: "US pulsado 1:2 o 1:1 + TENS de frecuencia mixta",
+        modalidad: "US pulsado 50 % (1:1) + TENS de frecuencia mixta",
         frecuencia: "US 1 - 3 MHz | Corriente mixta (< 10 Hz y ≈ 100 Hz), 200 µs",
         intensidad: "US ≈ 0.4 W/cm² | Corriente fuerte pero cómoda",
-        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × (suma de la razón de pulso)",
+        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × (1 ÷ ciclo de trabajo)",
         ref: ["watson_us", "vance_2022"], estado: "pendiente",
         notaFuente: "No se encontró un protocolo combinado verificado: se componen las dosis individuales de cada agente."
       },
       cronica: {
-        modalidad: "US pulsado 1:1 o continuo + TENS de baja frecuencia o mixto",
+        modalidad: "US pulsado 50 % o continuo 100 % + TENS de baja frecuencia o mixto",
         frecuencia: "US 1 MHz | Corriente < 10 Hz o mixta, 200 µs",
         intensidad: "US ≈ 0.5 W/cm² o más | Corriente fuerte pero cómoda",
-        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × (suma de la razón de pulso)",
+        tiempo: "El del ultrasonido: 1 min × áreas de cabezal × (1 ÷ ciclo de trabajo)",
         ref: ["watson_us", "vance_2022"], estado: "pendiente",
         notaFuente: "No se encontró un protocolo combinado verificado: se componen las dosis individuales de cada agente."
       }
@@ -710,13 +710,19 @@ window.DATOS_FISIO = {
     // Ultrasonido: método de Watson (1 minuto de energía por cada área de cabezal)
     ultrasonido: {
       minutosPorArea: 1,
-      factorPulso: { "1:4": 5, "1:3": 4, "1:2": 3, "1:1": 2, "continuo": 1 },
+      // Ciclos de trabajo habituales en los equipos. factor = 1 ÷ ciclo (equivale a la "suma de la razón de pulso" de Watson)
+      ciclos: {
+        "20":  { etiqueta: "20 % (pulsado 1:4)",   ciclo: 0.20, factor: 5 },
+        "50":  { etiqueta: "50 % (pulsado 1:1)",   ciclo: 0.50, factor: 2 },
+        "100": { etiqueta: "100 % (continuo)",     ciclo: 1.00, factor: 1 }
+      },
       porFase: {
-        aguda:    { razon: "1:4",      intensidad: 0.2, mhz: 3 },
-        subaguda: { razon: "1:2",      intensidad: 0.4, mhz: 3 },
-        cronica:  { razon: "1:1",      intensidad: 0.5, mhz: 1 }
+        aguda:    { ciclo: "20",  intensidad: 0.2, mhz: 3 },
+        subaguda: { ciclo: "50",  intensidad: 0.4, mhz: 3 },
+        cronica:  { ciclo: "50",  intensidad: 0.5, mhz: 1 }
       },
       semivalor_cm: { "1": 4.0, "3": 2.5 },
+      limiteSuperficial_cm: 2,
       ref: ["watson_us"]
     },
 
