@@ -606,11 +606,13 @@
                 const def = u.porFase[fase];
                 precisionActual = { tipo: "us" };
                 contenido = `
-                    <p class="text-xs text-slate-500 leading-relaxed">Método de Watson: 1 minuto de energía por cada área equivalente al cabezal, multiplicado por la suma de la razón de pulso.</p>
+                    <p class="text-xs text-slate-500 leading-relaxed">Método de Watson: 1 minuto de energía por cada área equivalente al cabezal, multiplicado por la inversa del ciclo de trabajo (20 % = 5, 50 % = 2, 100 % = 1).</p>
                     <div class="mt-4 grid grid-cols-2 gap-3">
+                        ${campo('pUSmhz', 'Frecuencia de trabajo', `<select id="pUSmhz" class="${inp}"><option value="1" ${def.mhz === 1 ? 'selected' : ''}>1 MHz (profundo)</option><option value="3" ${def.mhz === 3 ? 'selected' : ''}>3 MHz (superficial)</option></select>`)}
+                        ${campo('pUSprof', 'Profundidad de la lesión (cm, opcional)', `<input id="pUSprof" type="number" min="0" step="0.5" placeholder="p. ej. 1.5" class="${inp}">`)}
                         ${campo('pUSera', 'ERA del cabezal (cm²)', `<input id="pUSera" type="number" min="0.1" step="0.1" value="5" class="${inp}">`)}
                         ${campo('pUSarea', 'Área a tratar (cm²)', `<input id="pUSarea" type="number" min="0.1" step="0.5" value="10" class="${inp}">`)}
-                        ${campo('pUSrazon', 'Razón de pulso', `<select id="pUSrazon" class="${inp}">${Object.keys(u.factorPulso).map(k => `<option value="${k}" ${k === def.razon ? 'selected' : ''}>${k === 'continuo' ? 'Continuo' : k}</option>`).join('')}</select>`)}
+                        ${campo('pUSrazon', 'Ciclo de trabajo', `<select id="pUSrazon" class="${inp}">${Object.entries(u.ciclos).map(([k, c]) => `<option value="${k}" ${k === def.ciclo ? 'selected' : ''}>${c.etiqueta}</option>`).join('')}</select>`)}
                         ${campo('pUSint', 'Intensidad en la lesión (W/cm²)', `<input id="pUSint" type="number" min="0.05" step="0.05" value="${def.intensidad}" class="${inp}">`)}
                     </div>`;
             } else if (agenteId === "laser") {
@@ -681,22 +683,26 @@
             if (precisionActual.tipo === "us") {
                 const u = D.dosimetria.ultrasonido;
                 const era = num('pUSera'), area = num('pUSarea'), inten = num('pUSint');
-                const razon = $('pUSrazon').value;
+                const cicloSel = u.ciclos[$('pUSrazon').value];
+                const mhz = $('pUSmhz').value, prof = num('pUSprof');
                 if (!(era > 0) || !(area > 0) || !(inten > 0)) { salida.innerHTML = avisoSalida('info', 'Ingrese valores válidos para el ERA, el área y la intensidad.'); return; }
                 const n = Math.ceil(area / era);
-                const factor = u.factorPulso[razon];
+                const factor = cicloSel.factor;
                 const tiempo = u.minutosPorArea * n * factor;
                 const potencia = inten * era;
                 const energia = potencia * 60 * u.minutosPorArea * n;
                 const densidad = inten * 60 * u.minutosPorArea;
                 salida.innerHTML = `<dl>
                     ${filaSalida('Áreas de cabezal a cubrir', `${n}`, `área a tratar ÷ ERA, redondeado hacia arriba`)}
-                    ${filaSalida('Tiempo total', `${fmt(tiempo, 1)} min`, `${u.minutosPorArea} min × ${n} áreas × ${factor} (factor de la razón ${razon})`)}
+                    ${filaSalida('Tiempo total', `${fmt(tiempo, 1)} min`, `${u.minutosPorArea} min × ${n} áreas × ${factor} (1 ÷ ciclo ${cicloSel.etiqueta.split(' (')[0]})`)}
                     ${filaSalida('Emisión efectiva', `${fmt(u.minutosPorArea * n, 1)} min`, `tiempo con el ultrasonido emitiendo`)}
+                    ${filaSalida('Frecuencia / semivalor', `${mhz} MHz / ≈ ${u.semivalor_cm[mhz]} cm`, `profundidad a la que la intensidad cae a la mitad`)}
                     ${filaSalida('Potencia de salida', `${fmt(potencia, 2)} W`, `intensidad × ERA`)}
+                    ${cicloSel.ciclo < 1 ? filaSalida('Intensidad promedio (SATA)', `${fmt(inten * cicloSel.ciclo, 3)} W/cm²`, `intensidad en el pulso × ciclo de trabajo (útil si su equipo muestra el promedio)`) : ''}
                     ${filaSalida('Energía total', `${fmt(energia, 0)} J`, `potencia × tiempo de emisión efectiva`)}
                     ${filaSalida('Densidad de energía', `${fmt(densidad, 0)} J/cm²`, `energía ÷ área cubierta`)}
                 </dl>
+                ${(mhz === '3' && prof > u.limiteSuperficial_cm) ? avisoSalida('precaucion', `Con 3 MHz la energía se absorbe en los primeros centímetros (semivalor ≈ ${u.semivalor_cm['3']} cm). Para una lesión a ${prof} cm considere 1 MHz.`) : ''}
                 ${avisoSalida('info', 'El tiempo sigue el método de Watson. La potencia y la energía son cálculos físicos que asumen que la intensidad indicada corresponde a la emisión (pico del pulso). Si su equipo muestra la intensidad promedio temporal, la energía real será menor. En lesiones profundas la intensidad en superficie debe ser mayor que la requerida en la lesión.')}`;
                 return;
             }
