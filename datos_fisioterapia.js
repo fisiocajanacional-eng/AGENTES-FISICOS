@@ -28,8 +28,8 @@
 
 window.DATOS_FISIO = {
 
-  version: "2.2",
-  fecha: "2026-10-23",
+  version: "2.3",
+  fecha: "2026-11-14",
   clasificacion: "CIE-10",
 
   // Abreviaturas que el buscador reemplaza antes de comparar (clave en minúsculas, sin tildes)
@@ -499,12 +499,14 @@ window.DATOS_FISIO = {
         ref: ["tenforde_2022"], estado: "pendiente"
       },
       cronica: {
-        modalidad: "Focal o radial (ambas con eficacia descrita en fascitis plantar y tendinopatías)",
-        frecuencia: "Impulsos y frecuencia por sesión: no especificados en la fuente consultada",
-        intensidad: "Iniciar con energía baja y titular según tolerancia. Densidad de flujo de energía (EFD): baja < 0.08, media 0.08 - 0.28, alta > 0.29 - 0.60 mJ/mm². Tendinopatías: baja a media. Tendinopatía calcificante y trastornos óseos: alta",
-        tiempo: "3 - 5 sesiones, con intervalo de 1 semana. Energía total = EFD × n.º de impulsos",
-        ref: ["tenforde_2022"], estado: "parcial",
-        notaFuente: "El artículo imprime el rango bajo como '<0.08-10' (probable errata) y advierte que los puntos de corte varían entre autores. No informa impulsos por sesión, frecuencia (Hz) ni presión (bar)."
+        modalidad: "Radial (intensidad en bar) o focal (densidad de energía en mJ/mm²)",
+        presion_bar: "Radial: 2 - 3 bar. Iniciar en 2 bar y titular según tolerancia (el valor en bar depende del equipo y del aplicador)",
+        efd: "Focal: baja < 0.08, media 0.08 - 0.28, alta > 0.29 - 0.60 mJ/mm². Tendinopatías: baja a media. Tendinopatía calcificante y trastornos óseos: alta",
+        impulsos: "2000 por sesión (valor usado en los ensayos de fascitis plantar)",
+        frecuencia: "10 Hz (rango de los ensayos: 10 - 15 Hz)",
+        tiempo: "3 - 5 sesiones, con intervalo de 1 a 2 semanas. Tiempo de emisión = impulsos ÷ Hz (2000 a 10 Hz ≈ 3 min 20 s)",
+        ref: ["tenforde_2022", "rhim_2025", "lohrer_2010", "narin_2020", "okur_2019"], estado: "parcial",
+        notaFuente: "Las categorías de energía focal y el esquema de sesiones provienen de Tenforde 2022 y del consenso Delphi de 2025 (leído a través del resumen del fabricante Storz, no del artículo completo). Los valores de bar, impulsos y Hz provienen de tres ensayos de fascitis plantar con ondas radiales (2 - 3 bar, 2000 impulsos, 10 - 15 Hz): son datos de estudios, no una guía de dosificación, y no se extrapolaron a otras patologías. Iniciar en 2 bar es criterio de titulación (Tenforde recomienda comenzar con energía baja). Tenforde no informa bar, impulsos ni Hz."
       }
     },
 
@@ -566,6 +568,30 @@ window.DATOS_FISIO = {
       cita: "Tenforde AS, Borgstrom HE, DeLuca S, McCormack M, Singh M, Soo Hoo J, Yun PH. Best practices for extracorporeal shockwave therapy in musculoskeletal medicine: clinical application and training consideration. PM&R. 2022;14(5):611-619. doi:10.1002/pmrj.12790.",
       url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC9321712",
       detalle: "Categorías de densidad de flujo de energía, esquema de 3 a 5 sesiones semanales, titulación desde energía baja y contraindicaciones.",
+      estado: "verificada"
+    },
+    rhim_2025: {
+      cita: "Rhim HC, et al. Recommendations for use of extracorporeal shockwave therapy in sports medicine: an international modified Delphi study. Br J Sports Med. 2025;59(18):1287-1301. doi:10.1136/bjsports-2024-109082.",
+      url: "https://doi.org/10.1136/bjsports-2024-109082",
+      detalle: "Consenso de 41 expertos: 3 a 5 sesiones con intervalo de 1 a 2 semanas, focalización clínica sobre el punto de mayor dolor, sin anestesia local, evitar la aplicación con EVA > 6 en tendón o > 7 en hueso y evitar AINE durante el tratamiento. Consultado a través de un resumen del fabricante Storz; no se leyó el artículo completo.",
+      estado: "parcial"
+    },
+    lohrer_2010: {
+      cita: "Lohrer H, Nauck T, Dorn-Lange NV, Scholl J, Vester JC. Comparison of radial versus focused extracorporeal shock waves in plantar fasciitis using functional measures. Foot Ankle Int. 2010;31(1):1-9. doi:10.3113/FAI.2010.0001.",
+      url: "https://pubmed.ncbi.nlm.nih.gov/20067715/",
+      detalle: "Fascitis plantar recalcitrante: radial 3 bar (0.17 mJ/mm²) y focal 0.20 mJ/mm², ambas con 2000 impulsos a 10 Hz, 3 sesiones con 1 semana de intervalo (equipo Duolith SD1).",
+      estado: "verificada"
+    },
+    narin_2020: {
+      cita: "Narin S, Unver B, Demirkiran ND, Erduran M. Comparison of radial extracorporeal shock wave therapy in plantar fasciitis treatment using two different frequencies. Cureus. 2020;12(5):e8284. doi:10.7759/cureus.8284.",
+      url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7317142",
+      detalle: "Fascitis plantar crónica, ensayo con 41 pacientes: 3 bar a 15 Hz frente a 2 bar a 10 Hz, 2000 impulsos y 10 sesiones (equipo EMS Swiss DolorClast).",
+      estado: "verificada"
+    },
+    okur_2019: {
+      cita: "Okur SC, Aydin A. Comparison of extracorporeal shock wave therapy with custom foot orthotics in plantar fasciitis treatment: a prospective randomized one-year follow-up study. J Musculoskelet Neuronal Interact. 2019;19(2):178-186.",
+      url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC6587088",
+      detalle: "Fascitis plantar: ondas radiales a 2 bar y 12 Hz, 2000 impulsos repartidos en 5 puntos de 400, 3 sesiones semanales, sin anestesia.",
       estado: "verificada"
     },
     glaviano_2016: {
@@ -703,6 +729,70 @@ window.DATOS_FISIO = {
   },
 
   /*
+    REFERENCIAS DE APLICACIÓN (recuadro con esquema y técnica por agente)
+    "esquema" es el nombre del dibujo incluido en la página. "foto" (opcional) es la ruta de una imagen propia,
+    por ejemplo "imagenes/ultrasonido.jpg": si el archivo existe se muestra junto al esquema.
+    Cada punto con "ref" cita su fuente; los que llevan general: true son práctica general sin fuente verificada.
+  */
+  referencias: {
+    ultrasonido: {
+      esquema: "ultrasonido", foto: "",
+      puntos: [
+        { texto: "El área se cubre en múltiplos del área efectiva del cabezal (ERA): el método de Watson asigna 1 minuto de energía por cada área equivalente al cabezal.", ref: ["watson_us"] },
+        { texto: "1 MHz alcanza tejidos más profundos (semivalor ≈ 4 cm) y 3 MHz los superficiales (≈ 2.5 cm).", ref: ["watson_us"] },
+        { texto: "Gel de acoplamiento y cabezal en contacto total con la piel, perpendicular a la superficie.", general: true },
+        { texto: "Mover el cabezal con lentitud, en círculos o barridos superpuestos, dentro del área calculada, sin dejarlo fijo.", general: true }
+      ]
+    },
+    terapia_combinada: {
+      esquema: "combinada", foto: "",
+      puntos: [
+        { texto: "El cabezal de ultrasonido actúa como electrodo activo: se mueve sobre la zona con gel conductor.", general: true },
+        { texto: "El electrodo de retorno se coloca con contacto amplio, en el lado opuesto o próximo a la zona tratada.", general: true },
+        { texto: "El tiempo es el del ultrasonido (ver cálculo de precisión); la corriente acompaña ese tiempo.", ref: ["watson_us"] }
+      ]
+    },
+    laser: {
+      esquema: "laser", foto: "",
+      puntos: [
+        { texto: "La dosis de la tabla WALT se reparte en puntos sobre la estructura: el cálculo de precisión indica los puntos y el tiempo por punto.", ref: ["walt_2010"] },
+        { texto: "Haz perpendicular y contacto suave con la piel, sin presión excesiva.", general: true },
+        { texto: "Todas las personas presentes usan gafas de protección adecuadas a la longitud de onda del equipo.", general: true }
+      ]
+    },
+    ondas_choque: {
+      esquema: "ondas_choque", foto: "",
+      puntos: [
+        { texto: "Dirigir el aplicador al punto de máxima sensibilidad (focalización clínica), sin anestesia local.", ref: ["rhim_2025"] },
+        { texto: "En un ensayo con ondas radiales, los 2000 impulsos se repartieron en 5 puntos de 400.", ref: ["okur_2019"] },
+        { texto: "Gel acoplador entre el aplicador y la piel, con el aplicador perpendicular a la zona.", general: true },
+        { texto: "El consenso recomienda no aplicar con dolor EVA > 6 en tendón o > 7 en hueso, y evitar AINE durante el tratamiento.", ref: ["rhim_2025"] }
+      ]
+    },
+    magnetoterapia: {
+      esquema: "magneto", foto: "",
+      puntos: [
+        { texto: "Colocar el solenoide o la placa de modo que el campo atraviese la zona a tratar.", general: true },
+        { texto: "Retirar objetos metálicos y descartar marcapasos o implantes electrónicos antes de aplicar.", general: true }
+      ]
+    },
+    alta_frecuencia: {
+      esquema: "alta_frecuencia", foto: "",
+      puntos: [
+        { texto: "Electrodo activo en movimiento lento sobre la zona, con crema o gel conductor del equipo.", general: true },
+        { texto: "Electrodo pasivo de retorno con contacto amplio. Controlar la sensación térmica con el paciente durante toda la sesión.", general: true }
+      ]
+    },
+    onda_corta: {
+      esquema: "onda_corta", foto: "",
+      puntos: [
+        { texto: "Modo condensador: placas a ambos lados de la zona, con separación de aire y toalla seca. Modo inductivo: tambor sobre la zona.", general: true },
+        { texto: "Piel seca y sin sudor, sin metales en el campo. Controlar la sensación térmica con el paciente.", general: true }
+      ]
+    }
+  },
+
+  /*
     DOSIMETRÍA DE PRECISIÓN (cálculos opcionales)
   */
   dosimetria: {
@@ -766,8 +856,10 @@ window.DATOS_FISIO = {
     ondas_choque: {
       efd: { baja: "< 0.08", media: "0.08 - 0.28", alta: "> 0.29 - 0.60" },
       limites: { media: [0.08, 0.28], alta: [0.29, 0.60] },
-      sesiones: "3 a 5, con intervalo de 1 semana",
-      ref: ["tenforde_2022"]
+      sesiones: "3 a 5, con intervalo de 1 a 2 semanas",
+      // Valores de los ensayos de fascitis plantar (Lohrer 2010, Narin 2020, Okur 2019)
+      radial: { bar: [2, 3], hz: [10, 15], hzPorDefecto: 10, impulsos: 2000, puntosEjemplo: "2000 impulsos en 5 puntos de 400 (Okur 2019)" },
+      ref: ["tenforde_2022", "rhim_2025", "lohrer_2010", "narin_2020", "okur_2019"]
     }
   },
 
